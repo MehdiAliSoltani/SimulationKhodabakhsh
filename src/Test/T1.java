@@ -23,6 +23,7 @@ public class T1 {
     public static void st(){
         System.out.println("000000");
     }
+    
     static Map< Integer, El[]> l = new LinkedHashMap<Integer, El[]>();
 
     public static void main(String[] args) {
