@@ -9,6 +9,7 @@ import AppWorkload.Workload;
 import ExteraCloudSim.CloudletPower;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import simulation.AppConstants;
 import simulation.CreateResources;
 
@@ -28,6 +29,8 @@ public class SchedulerAgent {
      */
     public List<CloudletPower> createCloudletList(int userId, AdmissionAgent admissionagent) {
         QueuingAgent queuingAgent = admissionagent.queuingagent;
+//        QueuingAgent qa = new QueuingAgent();
+//        Queue<Workload>[] sq = qa.getSystemQueue();
         CreateResources createResources = new CreateResources();
         int[] kq = determineNumberOfRequestsForQueue();
         for (int i = 0; i < AppConstants.NUM_QUEUE; i++) {
@@ -36,7 +39,7 @@ public class SchedulerAgent {
                     Workload request = queuingAgent.getElement(i);
                     if (request != null) {
                         cloudletlist.add(createResources.createCloudlet(userId, request));
-                        queuingAgent.removeElement(i);
+//                        queuingAgent.removeElement(i);
                     } else {
                         break;
                     }

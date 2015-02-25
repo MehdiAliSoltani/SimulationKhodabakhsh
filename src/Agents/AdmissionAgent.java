@@ -103,6 +103,7 @@ public class AdmissionAgent {
                      */
                     try {
                         queuingagent.addQueue(request, queueNumber);
+                        this.list_of_list_of_workload.remove(request);
                     } catch (ArrayIndexOutOfBoundsException e) {
                         System.out.println(e);
                     }

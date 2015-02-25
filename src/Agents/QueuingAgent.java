@@ -45,7 +45,10 @@ public class QueuingAgent {
 
     public Workload getElement(int queueNumber) {
         try {
-            return systemQueue[queueNumber].peek();
+//            return systemQueue[queueNumber].peek();
+            Workload w = systemQueue[queueNumber].poll();
+//            System.out.println("systemQueue[queueNumber].size "+ systemQueue[queueNumber].size());
+            return w;
         } catch (IndexOutOfBoundsException e) {
             System.out.println("class Queuing Agent, method getElement,  Index out of bound.");
             return null;
@@ -55,6 +58,7 @@ public class QueuingAgent {
     public Workload removeElement(int queueNumber) {
         try {
             return systemQueue[queueNumber].remove();
+            
         } catch (IndexOutOfBoundsException e) {
             System.out.println("class Queuing Agent, method getElement,  Index out of bound.");
         } catch (NoSuchElementException e) {

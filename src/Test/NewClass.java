@@ -3,9 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package Test;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.cloudbus.cloudsim.core.SimEntity;
 import org.cloudbus.cloudsim.core.SimEvent;
 
@@ -13,25 +14,38 @@ import org.cloudbus.cloudsim.core.SimEvent;
  *
  * @author Novin Pendar
  */
-public class NewClass extends SimEntity{
+public class NewClass {
 
-    public NewClass(String name) {
-        super(name);
+    public static void main(String[] args) {
+        List<List<Person>> list = new ArrayList<List<Person>>();
+        List<Person> lis = new ArrayList<Person>();
+
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                Person p = new Person(i,j, "P" + i+""+j);
+                lis.add(p);
+            }
+            list.add(lis);
+            lis.clear();
+        }
+        for(List<Person> l1 : list){
+            for (Person p : l1) {
+                System.out.println("ListNO "+ p.listNO+ "  Id "+p.id + "  name "+p.name );
+            }
+        }
     }
 
-    @Override
-    public void startEntity() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    static class Person {
 
-    @Override
-    public void processEvent(SimEvent ev) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+        int id;
+        int listNO;
+        String name;
 
-    @Override
-    public void shutdownEntity() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        public Person(int listNo,int id, String name) {
+            this.id = id;
+            this.listNO = listNo;
+            this.name = name;
+        }
+
     }
-    
 }

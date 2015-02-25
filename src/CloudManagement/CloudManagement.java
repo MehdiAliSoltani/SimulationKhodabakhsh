@@ -161,6 +161,7 @@ public class CloudManagement extends SimEntity {
                     admissionagent.fillQueue(starttime);
                     List<CloudletPower> cloudletlist = scheduler.createCloudletList(this.broker.getId(), admissionagent);
                     broker.submitCloudletList(cloudletlist);
+                    System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^"+cloudletlist.size());
                     CloudSim.resumeSimulation();
 
 //                scheduler.createCloudletList(hour, null)
