@@ -55,6 +55,7 @@ public class NetworkAgent {
 
                 for (HostPower host : hostlist) {
                     int dcId = host.getDatacenterID();
+                    System.out.println(dcId);
                     switch (datacenterId) {
                         case 0:
                             if (datacenterId == dcId) {
@@ -83,7 +84,7 @@ public class NetworkAgent {
 
                     }
 
-                    tablevalue[tableIndex].setDatacenterId(datacenterId);
+                    tablevalue[tableIndex].setDatacenterId(dcId);
                     tablevalue[tableIndex].setComputehostId(host.getId());
                     tablevalue[tableIndex].setAlpha(default_alpha_in_datacenter);
                     tableIndex++;
