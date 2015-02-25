@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ClassDiagram name="Reverse engineered simulation 2015.02.25 16-53-25-565">
+  <ClassDiagramComponents>
+    <Class xPosition="20.0" yPosition="20.0" package="simulation" name="AdmissionQueuing" visibility="public">
+      <Constructors/>
+      <Fields/>
+      <Methods/>
+    </Class>
+    <Class xPosition="320.0" yPosition="20.0" package="simulation" name="AppConstants" visibility="public">
+      <Constructors/>
+      <Fields>
+        <Field name="SIMULATION_LENGTH" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="SIMULATION_HOUR" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="HOUR_IN_SECOND" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="EVERY_FIVE" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="NUM_of_REQUESTS_SENARIO_1_per_SECOND" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="NUM_of_REQUESTS_SENARIO_2_per_SECOND" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="NUM_REQUESTS_IN_SENARIO_1" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="NUM_REQUESTS_IN_SENARIO_2" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="L_MIN" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="L_MAX" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="L_Mean" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="FILE_SIZE_MIN" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="FILE_SIZE_MAX" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="NUM_DATACENTER" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="NUM_COMPUTE_SERVERS" visibility="public" type="int[]" isStatic="true" isFinal="true"/>
+        <Field name="NUM_STORAGE_SERVERS" visibility="public" type="int[]" isStatic="true" isFinal="true"/>
+        <Field name="staticCoefficientTraficInDatacenter_0" visibility="public" type="List&lt;Double&gt;" isStatic="true" isFinal="true"/>
+        <Field name="staticCoefficientTraficBetweenDatacenter_0" visibility="public" type="List&lt;Double&gt;" isStatic="true" isFinal="true"/>
+        <Field name="staticCoefficientTraficInDatacenter_1" visibility="public" type="List&lt;Double&gt;" isStatic="true" isFinal="true"/>
+        <Field name="staticCoefficientTraficBetweenDatacenter_1" visibility="public" type="List&lt;Double&gt;" isStatic="true" isFinal="true"/>
+        <Field name="FILE_BASE_UNIT_ONE_K" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="MAX_NETWORK_SPEED_IN_DC" visibility="public" type="long" isStatic="true" isFinal="true"/>
+        <Field name="NETWORK_OVERHEAD_IN_DC" visibility="public" type="double" isStatic="true" isFinal="true"/>
+        <Field name="MAX_EFFICIENYC_IN_DC" visibility="public" type="double" isStatic="true" isFinal="true"/>
+        <Field name="BASE_FILE_TRANSFER_TIME_IN_DC" visibility="public" type="double" isStatic="true" isFinal="true"/>
+        <Field name="MAX_NETWORK_SPEED_BETWEEN_DC" visibility="public" type="long" isStatic="true" isFinal="true"/>
+        <Field name="NETWORK_OVERHEAD_BETWEEN_DC" visibility="public" type="List&lt;Double&gt;" isStatic="true" isFinal="true"/>
+        <Field name="BASE_FILE_TRANSFER_TIME_BETWEEN_DC" visibility="public" type="double" isStatic="true"/>
+        <Field name="COMPUTE_HOST" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="STORAGE_HOST" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="NUM_CPU" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="NUM_CORE_per_CPU" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="NUM_PE_per_CS" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="PE_MIPS" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="STORAGE_per_CS" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="STORAGE_per_SS" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="CS_BAND_WIDTH" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="CS_RAM" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="VM_TYPE" visibility="public" type="int[]" isStatic="true" isFinal="true"/>
+        <Field name="NUM_of_VM_in_HOST" visibility="public" type="int[]" isStatic="true" isFinal="true"/>
+        <Field name="VM_PES" visibility="public" type="int[]" isStatic="true" isFinal="true"/>
+        <Field name="VM_RAM" visibility="public" type="int[]" isStatic="true" isFinal="true"/>
+        <Field name="VM_MIPS" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="VM_IMAGE_SIZE" visibility="public" type="int[]" isStatic="true" isFinal="true"/>
+        <Field name="VM_BAND_WIDTH" visibility="public" type="int[]" isStatic="true" isFinal="true"/>
+        <Field name="NUM_QUEUE" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="SCHEDULING_INTERVAL" visibility="public" type="double" isStatic="true" isFinal="true"/>
+        <Field name="SCHEDULING_PER_SECOND" visibility="public" type="double" isStatic="true" isFinal="true"/>
+        <Field name="PROCESS_CREATEVM_In_HOST" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="DIRECTORY" visibility="public" type="String" isStatic="true" isFinal="true"/>
+        <Field name="MIN_FILES_NEEDED" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="MAX_FILES_NEEDED" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="MIN_FILESIZE" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="MAX_FILESIZE" visibility="public" type="int" isStatic="true" isFinal="true"/>
+        <Field name="MEAN_FILESIZE" visibility="public" type="int" isStatic="true" isFinal="true"/>
+      </Fields>
+      <Methods/>
+    </Class>
+    <Class xPosition="620.0" yPosition="20.0" package="simulation" name="CreateResources" visibility="public">
+      <Constructors/>
+      <Fields>
+        <Field name="cloudletList" visibility="private" type="List&lt;Cloudlet&gt;" isStatic="true"/>
+      </Fields>
+      <Methods>
+        <Method name="createDatacenter" visibility="public" returnType="DatacenterPower">
+          <Argument type="String" name="name"/>
+          <Argument type="int" name="datacenterId"/>
+        </Method>
+        <Method name="createHostList" visibility="private" returnType="void">
+          <Argument type="int" name="numberofhosts"/>
+          <Argument type="int" name="datacenterId"/>
+        </Method>
+        <Method name="getVmId" visibility="private" returnType="int"/>
+        <Method name="incrementVmNumber" visibility="private" returnType="void">
+          <Argument type="int" name="vmtype"/>
+          <Argument type="int" name="datacenterId"/>
+        </Method>
+        <Method name="createVM" visibility="public" returnType="void">
+          <Argument type="int" name="userId"/>
+          <Argument type="int" name="vmtype"/>
+          <Argument type="int" name="datacenterId"/>
+        </Method>
+        <Method name="createBroker" visibility="public" returnType="DatacenterBrokerPower"/>
+        <Method name="createCloudlet" visibility="public" returnType="CloudletPower">
+          <Argument type="int" name="userId"/>
+          <Argument type="Workload" name="request"/>
+        </Method>
+        <Method name="createCloudlet" visibility="private" returnType="List&lt;Cloudlet&gt;" isStatic="true">
+          <Argument type="int" name="userId"/>
+          <Argument type="int" name="cloudlets"/>
+          <Argument type="int" name="idShift"/>
+        </Method>
+      </Methods>
+    </Class>
+    <Class xPosition="920.0" yPosition="20.0" package="simulation" name="Simulation" visibility="public">
+      <Constructors/>
+      <Fields>
+        <Field name="SENARIO" visibility="public" type="int" isStatic="true"/>
+        <Field name="NO_VM" visibility="public" type="int" isStatic="true"/>
+        <Field name="Vm_NO" visibility="public" type="int" isStatic="true"/>
+        <Field name="COMPUTE_SERVER_LIST" visibility="public" type="List&lt;HostPower&gt;" isStatic="true"/>
+        <Field name="STORAGE_SERVER_LIST" visibility="public" type="StorageHost[]" isStatic="true"/>
+        <Field name="VMLIST" visibility="public" type="List&lt;VmPower&gt;" isStatic="true"/>
+        <Field name="VM_NUM_TYPE" visibility="public" type="int[][]" isStatic="true"/>
+      </Fields>
+      <Methods>
+        <Method name="main" visibility="public" returnType="void" isStatic="true">
+          <Argument type="String[]" name="args"/>
+        </Method>
+        <Method name="getCOMPUTE_SERVER_LIST" visibility="public" returnType="List&lt;HostPower&gt;" isStatic="true"/>
+        <Method name="setCOMPUTE_SERVER_LIST" visibility="public" returnType="void" isStatic="true">
+          <Argument type="List&lt;HostPower&gt;" name="HOSTLIST"/>
+        </Method>
+        <Method name="getVMLIST" visibility="public" returnType="List&lt;VmPower&gt;" isStatic="true"/>
+        <Method name="setVMLIST" visibility="public" returnType="void" isStatic="true">
+          <Argument type="List&lt;VmPower&gt;" name="VMLIST"/>
+        </Method>
+      </Methods>
+    </Class>
+  </ClassDiagramComponents>
+  <ClassDiagramRelations/>
+</ClassDiagram>

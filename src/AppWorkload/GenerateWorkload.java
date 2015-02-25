@@ -120,7 +120,7 @@ public class GenerateWorkload {
                             datastorageDcId = 1;  // data storage is in datacenter #1
                         }
 //                        System.out.println("Arrival time: "+arrivaltime);
-                        request = new Workload(requestID, size, filesize, filesize, AppConstants.VM_PES[peneeded], storageserver, datastorageDcId, arrivaltime,
+                        request = new Workload(requestID, size, filesize, filesize, AppConstants.VM_PES[peneeded], datastorageDcId,storageserver , arrivaltime,
                                 numberOfFilesNeeded, sizeOfFiles, timetoIO);
                         /*   request = new Workload(requestID,
                          size,

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ClassDiagram name="Reverse engineered CloudManagement 2015.02.25 16-55-26-084">
+  <ClassDiagramComponents>
+    <Class xPosition="20.0" yPosition="20.0" package="CloudManagement" name="CloudController" visibility="public">
+      <Constructors>
+        <Constructor name="CloudController" visibility="public">
+          <Argument type="String" name="name"/>
+        </Constructor>
+      </Constructors>
+      <Fields>
+        <Field name="SCHEDULE_one_HOUR" visibility="private" type="int" isStatic="true" isFinal="true"/>
+      </Fields>
+      <Methods>
+        <Method name="startEntity" visibility="public" returnType="void"/>
+        <Method name="processEvent" visibility="public" returnType="void">
+          <Argument type="SimEvent" name="ev"/>
+        </Method>
+        <Method name="shutdownEntity" visibility="public" returnType="void"/>
+      </Methods>
+    </Class>
+    <Class xPosition="320.0" yPosition="20.0" package="CloudManagement" name="CloudManagement" visibility="public">
+      <Constructors>
+        <Constructor name="CloudManagement" visibility="public">
+          <Argument type="String" name="name"/>
+        </Constructor>
+      </Constructors>
+      <Fields>
+        <Field name="SCHEDULE_EVERY_HOUR" visibility="private" type="int" isStatic="true" isFinal="true"/>
+        <Field name="SCHEDULE_EVERY_FIVE_MINUTE" visibility="private" type="int" isStatic="true" isFinal="true"/>
+        <Field name="SCHEDULE_EVERY_SECOND" visibility="private" type="int" isStatic="true" isFinal="true"/>
+        <Field name="admissionagent" visibility="private" type="AdmissionAgent"/>
+        <Field name="resource" visibility="package" type="CreateResources"/>
+        <Field name="broker" visibility="private" type="DatacenterBrokerPower"/>
+        <Field name="datacenterpower0" visibility="package" type="DatacenterPower"/>
+        <Field name="datacenterpower1" visibility="package" type="DatacenterPower"/>
+        <Field name="scheduler" visibility="package" type="SchedulerAgent"/>
+        <Field name="mutex" visibility="private" type="Semaphore"/>
+        <Field name="flag" visibility="package" type="boolean"/>
+      </Fields>
+      <Methods>
+        <Method name="createCloud" visibility="private" returnType="void"/>
+        <Method name="createVms" visibility="private" returnType="void"/>
+        <Method name="startEntity" visibility="public" returnType="void"/>
+        <Method name="processEvent" visibility="public" returnType="void">
+          <Argument type="SimEvent" name="ev"/>
+        </Method>
+        <Method name="shutdownEntity" visibility="public" returnType="void"/>
+      </Methods>
+    </Class>
+    <Class xPosition="620.0" yPosition="20.0" package="CloudManagement" name="CloudTable" visibility="public">
+      <Constructors/>
+      <Fields/>
+      <Methods/>
+    </Class>
+    <Class xPosition="920.0" yPosition="20.0" package="CloudManagement" name="CloudTableRow" visibility="public">
+      <Constructors/>
+      <Fields>
+        <Field name="requestedLength" visibility="package" type="int"/>
+        <Field name="actualLength" visibility="package" type="int"/>
+        <Field name="arrivalTime" visibility="package" type="long"/>
+        <Field name="startTime" visibility="package" type="long"/>
+        <Field name="finishTime" visibility="package" type="long"/>
+        <Field name="numberofFiles" visibility="package" type="int"/>
+        <Field name="sizeofFile" visibility="package" type="long[]"/>
+        <Field name="timeToIO" visibility="package" type="long[]"/>
+      </Fields>
+      <Methods/>
+    </Class>
+  </ClassDiagramComponents>
+  <ClassDiagramRelations/>
+</ClassDiagram>

@@ -15,6 +15,25 @@ import simulation.AppConstants;
  */
 public class CloudController extends SimEntity {
 
+    public CloudController(String name) {
+        super(name);
+    }
+
+    @Override
+    public void startEntity() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void processEvent(SimEvent ev) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void shutdownEntity() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+/*
     private final static int SCHEDULE_one_HOUR = 0;
 
     public CloudController(String name) {
@@ -74,5 +93,5 @@ public class CloudController extends SimEntity {
         }
 
     }
-
+*/
 }

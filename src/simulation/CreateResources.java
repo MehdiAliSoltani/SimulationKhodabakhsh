@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import org.cloudbus.cloudsim.Cloudlet;
+import org.cloudbus.cloudsim.CloudletSchedulerSpaceShared;
 import org.cloudbus.cloudsim.CloudletSchedulerTimeShared;
 import org.cloudbus.cloudsim.DatacenterCharacteristics;
 import org.cloudbus.cloudsim.Pe;
@@ -60,7 +61,7 @@ public class CreateResources {
         // devices by now
 
         DatacenterCharacteristics characteristics = new DatacenterCharacteristics(
-                arch, os, vmm, Simulation.COMPUTE_SERVER_LIST, time_zone, cost, costPerMem,
+                arch, os, vmm, Simulation.COMPUTE_SERVER_LIST[datacenterId], time_zone, cost, costPerMem,
                 costPerStorage, costPerBw);
 
         // 6. Finally, we need to create a PowerDatacenter object.
@@ -70,7 +71,7 @@ public class CreateResources {
             datacenter = new DatacenterPower(
                     name,
                     characteristics,
-                    new VmAllocationPolicySimple(Simulation.COMPUTE_SERVER_LIST),
+                    new VmAllocationPolicySimple(Simulation.COMPUTE_SERVER_LIST[datacenterId]),
                     storageList,
                     schedulinginterval);
         } catch (Exception e) {
@@ -94,7 +95,7 @@ public class CreateResources {
             );
         }
         for (int hostID = 0; hostID < AppConstants.NUM_COMPUTE_SERVERS[datacenterId]; hostID++) {
-            Simulation.COMPUTE_SERVER_LIST.add(new HostPower(datacenterId,
+            Simulation.COMPUTE_SERVER_LIST[datacenterId].add(new HostPower(datacenterId,
                     hostID,
                     new RamProvisionerSimple(AppConstants.CS_RAM),
                     new BwProvisionerSimple(AppConstants.CS_BAND_WIDTH),
@@ -135,7 +136,8 @@ public class CreateResources {
                     size,
                     1,
                     vmm,
-                    new CloudletSchedulerTimeShared(), 0);
+                    new CloudletSchedulerSpaceShared(), 0);
+//                    new CloudletSchedulerTimeShared(), 0);
             Simulation.VMLIST.add(vmpower);
             incrementVmNumber(vmtype, datacenterId);
 //            System.out.println(""+Simulation.VM_NUM_TYPE[this.datacenterID][vmtype]);

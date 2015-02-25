@@ -152,6 +152,7 @@ public class DatacenterBrokerPower extends DatacenterBroker{
         
         @Override
         protected void submitCloudlets() {
+            // determine VmId
 		int vmIndex = 0;
 		for (Cloudlet cloudlet : getCloudletList()) {
 			Vm vm;

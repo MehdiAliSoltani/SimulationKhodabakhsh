@@ -27,15 +27,23 @@ public class NetworkAgent {
 
     public NetworkAgent() {
         initializeWTable();
-        
+
     }
 
-    public  void initializeWTable() {
+    public void initializeWTable() {
         TableValues[] tablevalue;
         int tableIndex;
         double default_alpha_in_datacenter = 1;
         double default_alpha_between_datacenter;
-        List<HostPower> hostlist = Simulation.getCOMPUTE_SERVER_LIST();
+//        List<HostPower> hostlist = Simulation.getCOMPUTE_SERVER_LIST();
+ // this part temporarily added       
+        List<HostPower> hostlist = new  ArrayList<HostPower>();
+        for (int i = 0; i < AppConstants.NUM_DATACENTER; i++) {
+            for (HostPower h : Simulation.getCOMPUTE_SERVER_LIST(i)) {
+                hostlist.add(h);
+            }
+        }
+        
         tablevalue = new TableValues[hostlist.size()];
         for (int datacenterId = 0; datacenterId < AppConstants.NUM_DATACENTER; datacenterId++) {
             for (int dataStorageId = 0; dataStorageId < AppConstants.NUM_STORAGE_SERVERS[datacenterId]; dataStorageId++) {
@@ -110,9 +118,10 @@ public class NetworkAgent {
          */
         WTable = initWTable;
     }
-/**
- * call this method at the first of time slot scheduling 
- */
+
+    /**
+     * call this method at the first of time slot scheduling
+     */
     public void setDynamicWTable() {
 
         for (int datacenterId = 0; datacenterId < AppConstants.NUM_DATACENTER; datacenterId++) {
@@ -120,21 +129,24 @@ public class NetworkAgent {
                 Keys key = new Keys(datacenterId, dataStorageId);
                 TableValues[] tvalue = initWTable.get(key);
                 TableValues[] tableValues = null;
+                tableValues = new TableValues[tvalue.length];
                 for (int i = 0; i < tvalue.length; i++) {
                     int csId = tvalue[i].getComputehostId();
                     int dcId = tvalue[i].getDatacenterId();
+                    for (int dId = 0; dId < AppConstants.NUM_DATACENTER; dId++) {
+                        for (HostPower hostpower : Simulation.getCOMPUTE_SERVER_LIST(dId)) {
+                            if (hostpower.getDatacenterID() == dcId && hostpower.getId() == csId) {
+                                double bwutilization = hostpower.getBwUtilization();
+                                double alpha = tvalue[i].getAlpha() + tvalue[i].getAlpha() * bwutilization;
+//                            tableValues = new TableValues[tvalue.length];
+                                tableValues[i] = new TableValues();
+                                tableValues[i].setAlpha(alpha);
+                                tableValues[i].setComputehostId(csId);
+                                tableValues[i].setDatacenterId(dcId);
+                                break;
+                            }
 
-                    for (HostPower hostpower : Simulation.getCOMPUTE_SERVER_LIST()) {
-                        if (hostpower.getDatacenterID() == dcId && hostpower.getId() == csId) {
-                            double bwutilization = hostpower.getBwUtilization();
-                            double alpha = tvalue[i].getAlpha() + tvalue[i].getAlpha() * bwutilization;
-                            tableValues = new TableValues[tvalue.length];
-                            tableValues[i].setAlpha(alpha);
-                            tableValues[i].setComputehostId(csId);
-                            tableValues[i].setDatacenterId(dcId);
-                            break;
                         }
-
                     }
 
                 }
@@ -199,6 +211,12 @@ public class NetworkAgent {
 //         return (random.nextDouble() * AppConstants.staticCoefficientTraficInDatacenter[datacenterId] ) +1 ;
 //    }
 
+    public TableValues[] getWTableRow(int dataStorageDcId, int dataStorageId) {
+        Keys key = new Keys(dataStorageDcId, dataStorageId);
+//        TableValues[] t = this.WTable.get(key);
+        return this.WTable.get(key);
+    }
+
     class Keys {
 
         private int datacenterId;
@@ -246,7 +264,7 @@ public class NetworkAgent {
 
     }
 
-    class TableValues {
+    public class TableValues {
 
         private int datacenterId;
         private int computehostId;

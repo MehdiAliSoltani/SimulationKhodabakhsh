@@ -30,7 +30,8 @@ public class Simulation {
     public static int SENARIO = 1;
     public static int NO_VM = 0;
     public static int Vm_NO = 0;
-    public static List<HostPower> COMPUTE_SERVER_LIST = new ArrayList<HostPower>();  // list of hosts
+//    public static List<HostPower> COMPUTE_SERVER_LIST = new ArrayList<HostPower>();  // list of hosts
+    public static List<HostPower>[] COMPUTE_SERVER_LIST = new List[AppConstants.NUM_DATACENTER];// = new ArrayList<HostPower>();  // list of hosts
     public static StorageHost[] STORAGE_SERVER_LIST;
     
     public static List<VmPower> VMLIST = new ArrayList<VmPower>();
@@ -115,12 +116,12 @@ public class Simulation {
         System.out.println("Number of created VM = " + NO_VM);
     }
 
-    public static List<HostPower> getCOMPUTE_SERVER_LIST() {
-        return COMPUTE_SERVER_LIST;
+    public static List<HostPower> getCOMPUTE_SERVER_LIST(int datacenterId) {
+        return COMPUTE_SERVER_LIST[datacenterId];
     }
 
-    public static void setCOMPUTE_SERVER_LIST(List<HostPower> HOSTLIST) {
-        Simulation.COMPUTE_SERVER_LIST = HOSTLIST;
+    public static void setCOMPUTE_SERVER_LIST(List<HostPower> HOSTLIST , int datacenterId) {
+        Simulation.COMPUTE_SERVER_LIST[datacenterId] = HOSTLIST;
     }
 
     public static List<VmPower> getVMLIST() {

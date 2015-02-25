@@ -11,7 +11,10 @@ import Agents.SchedulerAgent;
 import ExteraCloudSim.CloudletPower;
 import ExteraCloudSim.DatacenterBrokerPower;
 import ExteraCloudSim.DatacenterPower;
+import ExteraCloudSim.HostPower;
 import Resource.StorageHost;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Semaphore;
@@ -22,6 +25,7 @@ import org.cloudbus.cloudsim.core.SimEntity;
 import org.cloudbus.cloudsim.core.SimEvent;
 import simulation.AppConstants;
 import simulation.CreateResources;
+import simulation.Simulation;
 import static simulation.Simulation.STORAGE_SERVER_LIST;
 import static simulation.Simulation.VMLIST;
 import static simulation.Simulation.VM_NUM_TYPE;
@@ -36,13 +40,14 @@ public class CloudManagement extends SimEntity {
     private final static int SCHEDULE_EVERY_HOUR = 0;
     private final static int SCHEDULE_EVERY_FIVE_MINUTE = 1;
     private final static int SCHEDULE_EVERY_SECOND = 2;
-    private AdmissionAgent admissionagent = new AdmissionAgent(AppConstants.DIRECTORY);
+    private AdmissionAgent admissionagent;// = new AdmissionAgent(AppConstants.DIRECTORY);
     CreateResources resource = new CreateResources();
     private DatacenterBrokerPower broker;
     DatacenterPower datacenterpower0;
     DatacenterPower datacenterpower1;
-    SchedulerAgent scheduler = new SchedulerAgent();
+    SchedulerAgent scheduler;// = new SchedulerAgent();
     private Semaphore mutex = new Semaphore(1);
+    private NetworkAgent networkAgent;
 
     public CloudManagement(String name) {
         super(name);
@@ -56,8 +61,10 @@ public class CloudManagement extends SimEntity {
     }
 
     private void createCloud() {
+//        Simulation.COMPUTE_SERVER_LIST  = 
         int numberofStorgehosts = 0;
         for (int i = 0; i < AppConstants.NUM_DATACENTER; i++) {
+            Simulation.COMPUTE_SERVER_LIST[i] = new ArrayList<HostPower>();  
             Arrays.fill(VM_NUM_TYPE[i], 0);
             numberofStorgehosts = +AppConstants.NUM_STORAGE_SERVERS[i];
 
@@ -95,6 +102,7 @@ public class CloudManagement extends SimEntity {
 
     @Override
     public void startEntity() {
+        createAgents();
 //          createCloud();
 //        pause(1);
         int destination = getId();
@@ -152,17 +160,23 @@ public class CloudManagement extends SimEntity {
                     }
                     flag = false;
                     mutex.release();
+                    
                     createVms();
                     CloudSim.resumeSimulation();
 
                 } else {
-
+                    
+                    getNetworkAgent().setDynamicWTable();
                     //ResourceAgent resourceAgent
                     admissionagent.fillQueue(starttime);
-                    List<CloudletPower> cloudletlist = scheduler.createCloudletList(this.broker.getId(), admissionagent);
-                    broker.submitCloudletList(cloudletlist);
-                    System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^"+cloudletlist.size());
+//                    List<CloudletPower> cloudletlist = scheduler.createCloudletList(this.broker.getId(), admissionagent);
+                    List<CloudletPower> cloudletlist = scheduler.createCloudletList(this.broker.getId());
+                    
+//                    broker.submitCloudletList(cloudletlist);
+//                    scheduler.determineVmId(cloudletlist.get(1));
+                    System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^" + cloudletlist.size());
                     CloudSim.resumeSimulation();
+//                    DatacenterPower p = this.datacenterpower0;
 
 //                scheduler.createCloudletList(hour, null)
                     //get the requests from the queue
@@ -177,6 +191,17 @@ public class CloudManagement extends SimEntity {
     @Override
     public void shutdownEntity() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public NetworkAgent getNetworkAgent() {
+        return networkAgent;
+    }
+
+    private void createAgents() {
+        admissionagent = new AdmissionAgent(AppConstants.DIRECTORY);
+        networkAgent = new NetworkAgent(); // initialize network table 
+        scheduler = new SchedulerAgent(admissionagent,networkAgent);
+
     }
 
     class ScheduleNode {

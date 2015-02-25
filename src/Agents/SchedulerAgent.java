@@ -7,11 +7,15 @@ package Agents;
 
 import AppWorkload.Workload;
 import ExteraCloudSim.CloudletPower;
+import ExteraCloudSim.HostPower;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Queue;
 import simulation.AppConstants;
 import simulation.CreateResources;
+import simulation.Simulation;
 
 /**
  *
@@ -19,7 +23,14 @@ import simulation.CreateResources;
  */
 public class SchedulerAgent {
 
+    private AdmissionAgent admissionagent;
+    private NetworkAgent networkAgent;
     List<CloudletPower> cloudletlist = new ArrayList<CloudletPower>();
+
+    public SchedulerAgent(AdmissionAgent admissionagent, NetworkAgent networkAgent) {
+        this.admissionagent = admissionagent;
+        this.networkAgent = networkAgent;
+    }
 
     /**
      *
@@ -27,8 +38,9 @@ public class SchedulerAgent {
      * @param createResources
      * @return a list of CloudletPower
      */
-    public List<CloudletPower> createCloudletList(int userId, AdmissionAgent admissionagent) {
-        QueuingAgent queuingAgent = admissionagent.queuingagent;
+//    public List<CloudletPower> createCloudletList(int userId, AdmissionAgent admissionagent) {
+    public List<CloudletPower> createCloudletList(int userId) {
+        QueuingAgent queuingAgent = getAdmissionagent().queuingagent;
 //        QueuingAgent qa = new QueuingAgent();
 //        Queue<Workload>[] sq = qa.getSystemQueue();
         CreateResources createResources = new CreateResources();
@@ -93,13 +105,55 @@ public class SchedulerAgent {
         return f;
     }
 
-    public static void main(String[] args) {
-        SchedulerAgent s = new SchedulerAgent();
-        System.out.println("------");
-        int[] k = s.determineNumberOfRequestsForQueue();
-        for (int i = 0; i < k.length; i++) {
-            System.out.println(k[i]);
+    public int determineVmId(CloudletPower cloudlet) {
+        int dataStorageDcId = cloudlet.getDataStorageDatacenterId();
+        int dataStroageId = cloudlet.getDataStorageId();
+        int pesNeeded = cloudlet.getNumberOfPes();
+        NetworkAgent.TableValues[] tableRow = getNetworkAgent().getWTableRow(dataStorageDcId, dataStroageId);
+        Arrays.sort(tableRow, new Comparator<NetworkAgent.TableValues>() {
+
+            @Override
+            public int compare(NetworkAgent.TableValues o1, NetworkAgent.TableValues o2) {
+                if (o1.getAlpha() > o2.getAlpha()) {
+                    return 1;
+                } else if (o1.getAlpha() < o2.getAlpha()) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+
+            }
+        });
+        double min;
+        int tableIndex = 0;
+
+        while (true) {
+            for (int i = 0; i < tableRow.length; i++) {
+                int dcId = tableRow[i].getDatacenterId();
+                int csId =tableRow[i].getComputehostId();
+                List<HostPower> hostlist = new ArrayList<HostPower>(Simulation.getCOMPUTE_SERVER_LIST(i));
+//                hostlist.get(i).get
+            }
+            break;
         }
+        return 0;
+    }
+
+    public AdmissionAgent getAdmissionagent() {
+        return admissionagent;
+    }
+
+    public NetworkAgent getNetworkAgent() {
+        return networkAgent;
+    }
+
+    public static void main(String[] args) {
+//        SchedulerAgent s = new SchedulerAgent();
+//        System.out.println("------");
+//        int[] k = s.determineNumberOfRequestsForQueue();
+//        for (int i = 0; i < k.length; i++) {
+//            System.out.println(k[i]);
+//        }
     }
 
 }

@@ -19,7 +19,7 @@ public class AppConstants {
     public final static int HOUR_IN_SECOND = 3600;
     public final static int EVERY_FIVE = 5;
 
-    public final static int NUM_of_REQUESTS_SENARIO_1_per_SECOND = 50; // per second
+    public final static int NUM_of_REQUESTS_SENARIO_1_per_SECOND = 10; // per second
     public final static int NUM_of_REQUESTS_SENARIO_2_per_SECOND = 100; // per second
 
     public final static int NUM_REQUESTS_IN_SENARIO_1 = SIMULATION_LENGTH

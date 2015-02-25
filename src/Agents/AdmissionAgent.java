@@ -14,7 +14,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import simulation.AppConstants;
 import simulation.Simulation;
 
@@ -79,11 +82,34 @@ public class AdmissionAgent {
      }
      */
 
+//    private void getNumofElemets() throws IOException {
+//        int no =0;
+//        for (List<Workload> listworkload : this.list_of_list_of_workload) {
+//            for (Workload request : listworkload) {
+//                no++;
+//            }
+//        }
+//        System.out.println("************** "+no );
+//        System.in.read();
+//    }
+//    static boolean flag1= true;
     public void fillQueue(double starttime) {
+//        if(flag1) {
+//            try {
+//                getNumofElemets();
+//            } catch (IOException ex) {
+//                Logger.getLogger(AdmissionAgent.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+//            flag1 =false;
+//        }
 //        System.gc();
         boolean flag = true;
-        for (List<Workload> listworkload : this.list_of_list_of_workload) {
-            for (Workload request : listworkload) {
+        Iterator<List<Workload>> topIt = this.list_of_list_of_workload.iterator();
+        while (topIt.hasNext()) {
+            List<Workload> topList = topIt.next();
+            Iterator<Workload> downIt = topList.iterator();
+            while (downIt.hasNext()) {
+                Workload request = downIt.next();
                 double arrivaltime = request.getArrivalTime() / 100000.0;
 //                System.out.println("request.arriavleTime: " + request.getArrivalTime());
                 if (arrivaltime < starttime + AppConstants.SCHEDULING_INTERVAL) {
@@ -103,7 +129,7 @@ public class AdmissionAgent {
                      */
                     try {
                         queuingagent.addQueue(request, queueNumber);
-                        this.list_of_list_of_workload.remove(request);
+                        downIt.remove();
                     } catch (ArrayIndexOutOfBoundsException e) {
                         System.out.println(e);
                     }
@@ -112,11 +138,50 @@ public class AdmissionAgent {
                     break;
 
                 }
-            }
+            } // inner while
             if (!flag) {
                 break;
             }
-        }
+            topIt.remove();
+        } // outer while
+        /*
+         for (List<Workload> listworkload : this.list_of_list_of_workload) {
+         for (Workload request : listworkload) {
+         double arrivaltime = request.getArrivalTime() / 100000.0;
+         //                System.out.println("request.arriavleTime: " + request.getArrivalTime());
+         if (arrivaltime < starttime + AppConstants.SCHEDULING_INTERVAL) {
+
+         int length = request.getSize();
+         int pes = request.getPes();
+
+         //                    int queueNumber = (int) (Math.floor(length / 1000));
+         int queueNumber = 0;
+         for (int i = 0; i < AppConstants.VM_PES.length; i++) {
+         queueNumber = Arrays.binarySearch(AppConstants.VM_PES, pes);
+         }
+         //                    int queueNumber = pes-1;
+         /*                    if (queueNumber > 99) {
+         queueNumber = 99;
+         }
+         */
+        /*
+         try {
+         queuingagent.addQueue(request, queueNumber);
+         this.list_of_list_of_workload.remove(request);
+         } catch (ArrayIndexOutOfBoundsException e) {
+         System.out.println(e);
+         }
+         } else {
+         flag = false;
+         break;
+
+         }
+         } //
+         if (!flag) {
+         break;
+         }
+         }
+         */
 //        System.out.println("");
 //        queuingagent.
     }
