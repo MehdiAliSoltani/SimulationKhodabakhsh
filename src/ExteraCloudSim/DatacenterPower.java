@@ -7,15 +7,20 @@ package ExteraCloudSim;
 
 import Test.CloudSimExample1;
 import java.util.List;
+import java.util.Map;
 import org.cloudbus.cloudsim.Datacenter;
 import org.cloudbus.cloudsim.DatacenterCharacteristics;
 import org.cloudbus.cloudsim.Host;
+import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.Storage;
 import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.VmAllocationPolicy;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.core.CloudSimTags;
 import org.cloudbus.cloudsim.core.SimEvent;
+import org.cloudbus.cloudsim.core.predicates.PredicateType;
+import org.cloudbus.cloudsim.power.PowerDatacenter;
+import org.cloudbus.cloudsim.power.PowerHost;
 import simulation.AppConstants;
 
 /**
@@ -173,6 +178,71 @@ public class DatacenterPower extends Datacenter {
                 break;
         }
     }
+       @Override
+    protected void processVmCreate(SimEvent ev, boolean ack) {
+        Vm vm = (Vm) ev.getData();
+//        Host h = CloudSimExample1.hostList.get(2);
+//        boolean result = getVmAllocationPolicy().allocateHostForVm(vm,h);
+        boolean result = getVmAllocationPolicy().allocateHostForVm(vm);
+//        System.out.println("****************************************************************");
+//        System.out.println("****************************************************************");
+//        System.out.println("****************************************************************");
+        if (ack) {
+            int[] data = new int[3];
+            data[0] = getId();
+            data[1] = vm.getId();
+
+            if (result) {
+                data[2] = CloudSimTags.TRUE;
+            } else {
+                data[2] = CloudSimTags.FALSE;
+            }
+            send(vm.getUserId(), CloudSim.getMinTimeBetweenEvents(), CloudSimTags.VM_CREATE_ACK, data);
+        }
+
+        if (result) {
+            getVmList().add(vm);
+
+            if (vm.isBeingInstantiated()) {
+                vm.setBeingInstantiated(false);
+            }
+
+            vm.updateVmProcessing(CloudSim.clock(), getVmAllocationPolicy().getHost(vm).getVmScheduler()
+                    .getAllocatedMipsForVm(vm));
+        }
+
+    }
+    @Override
+    	protected void updateCloudletProcessing() {
+		// if some time passed since last processing
+		// R: for term is to allow loop at simulation start. Otherwise, one initial
+		// simulation step is skipped and schedulers are not properly initialized
+//            schedule(getId(), 2, CloudSimTags.VM_DATACENTER_EVENT);
+		if (CloudSim.clock() < 0.111 || CloudSim.clock() > getLastProcessTime() + CloudSim.getMinTimeBetweenEvents()) {
+                    
+			List<? extends Host> list = getVmAllocationPolicy().getHostList();
+			double smallerTime = Double.MAX_VALUE;
+			// for each host...
+			for (int i = 0; i < list.size(); i++) {
+				Host host = list.get(i);
+				// inform VMs to update processing
+				double time = host.updateVmsProcessing(CloudSim.clock());
+				// what time do we expect that the next cloudlet will finish?
+				if (time < smallerTime) {
+					smallerTime = time;
+				}
+			}
+			// gurantees a minimal interval before scheduling the event
+			if (smallerTime < CloudSim.clock() + CloudSim.getMinTimeBetweenEvents() + 0.01) {
+				smallerTime = CloudSim.clock() + CloudSim.getMinTimeBetweenEvents() + 0.01;
+			}
+			if (smallerTime != Double.MAX_VALUE) {
+				schedule(getId(), (smallerTime - CloudSim.clock()), CloudSimTags.VM_DATACENTER_EVENT);
+			}
+			setLastProcessTime(CloudSim.clock());
+		}
+	}
+
 /*
     protected void processVmCreateInHost(SimEvent ev, boolean ack) {
 //        SdVm vm = (SdVm) ev.getData();
@@ -217,39 +287,71 @@ public class DatacenterPower extends Datacenter {
 
     }
 */
-    @Override
-    protected void processVmCreate(SimEvent ev, boolean ack) {
-        Vm vm = (Vm) ev.getData();
-//        Host h = CloudSimExample1.hostList.get(2);
-//        boolean result = getVmAllocationPolicy().allocateHostForVm(vm,h);
-        boolean result = getVmAllocationPolicy().allocateHostForVm(vm);
-//        System.out.println("****************************************************************");
-//        System.out.println("****************************************************************");
-//        System.out.println("****************************************************************");
-        if (ack) {
-            int[] data = new int[3];
-            data[0] = getId();
-            data[1] = vm.getId();
+ 
+    /*
+    	@Override
+	protected void updateCloudletProcessing() {
+		if (getCloudletSubmitted() == -1 || getCloudletSubmitted() == CloudSim.clock()) {
+			CloudSim.cancelAll(getId(), new PredicateType(CloudSimTags.VM_DATACENTER_EVENT));
+			schedule(getId(), getSchedulingInterval(), CloudSimTags.VM_DATACENTER_EVENT);
+			return;
+		}
+		double currentTime = CloudSim.clock();
 
-            if (result) {
-                data[2] = CloudSimTags.TRUE;
-            } else {
-                data[2] = CloudSimTags.FALSE;
-            }
-            send(vm.getUserId(), CloudSim.getMinTimeBetweenEvents(), CloudSimTags.VM_CREATE_ACK, data);
-        }
+		// if some time passed since last processing
+		if (currentTime > getLastProcessTime()) {
+			System.out.print(currentTime + " ");
 
-        if (result) {
-            getVmList().add(vm);
+			double minTime = updateCloudetProcessingWithoutSchedulingFutureEventsForce();
 
-            if (vm.isBeingInstantiated()) {
-                vm.setBeingInstantiated(false);
-            }
+			if (!isDisableMigrations()) {
+				List<Map<String, Object>> migrationMap = getVmAllocationPolicy().optimizeAllocation(
+						getVmList());
 
-            vm.updateVmProcessing(CloudSim.clock(), getVmAllocationPolicy().getHost(vm).getVmScheduler()
-                    .getAllocatedMipsForVm(vm));
-        }
+				if (migrationMap != null) {
+					for (Map<String, Object> migrate : migrationMap) {
+						Vm vm = (Vm) migrate.get("vm");
+						PowerHost targetHost = (PowerHost) migrate.get("host");
+						PowerHost oldHost = (PowerHost) vm.getHost();
 
-    }
+						if (oldHost == null) {
+							Log.formatLine(
+									"%.2f: Migration of VM #%d to Host #%d is started",
+									currentTime,
+									vm.getId(),
+									targetHost.getId());
+						} else {
+							Log.formatLine(
+									"%.2f: Migration of VM #%d from Host #%d to Host #%d is started",
+									currentTime,
+									vm.getId(),
+									oldHost.getId(),
+									targetHost.getId());
+						}
+
+						targetHost.addMigratingInVm(vm);
+						incrementMigrationCount();
+
+						/** VM migration delay = RAM / bandwidth **/
+						// we use BW / 2 to model BW available for migration purposes, the other
+						// half of BW is for VM communication
+						// around 16 seconds for 1024 MB using 1 Gbit/s network
+/*						send(getId(),vm.getRam() / ((double) targetHost.getBw() / (2 * 8000)),
+								CloudSimTags.VM_MIGRATE,
+								migrate);
+					}
+				}
+			}
+
+			// schedules an event to the next time
+			if (minTime != Double.MAX_VALUE) {
+				CloudSim.cancelAll(getId(), new PredicateType(CloudSimTags.VM_DATACENTER_EVENT));
+				send(getId(), getSchedulingInterval(), CloudSimTags.VM_DATACENTER_EVENT);
+			}
+
+			setLastProcessTime(currentTime);
+		}
+	}
+*/
 
 }

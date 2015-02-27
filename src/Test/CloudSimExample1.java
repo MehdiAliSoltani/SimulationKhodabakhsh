@@ -8,9 +8,9 @@ package Test;
  *
  * Copyright (c) 2009, The University of Melbourne, Australia
  */
-import ExteraCloudSim.CloudletSchedulerSpaceSharedd;
 import ExteraCloudSim.DatacenterBrokerPower;
 import ExteraCloudSim.DatacenterPower;
+import ExteraCloudSim.DatacenterPowerNew;
 import ExteraCloudSim.HostPower;
 import ExteraCloudSim.VmPower;
 import java.text.DecimalFormat;
@@ -18,14 +18,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.CloudletSchedulerDynamicWorkload;
-import org.cloudbus.cloudsim.CloudletSchedulerSpaceShared;
-import org.cloudbus.cloudsim.CloudletSchedulerTimeShared;
-import org.cloudbus.cloudsim.Datacenter;
-import org.cloudbus.cloudsim.DatacenterBroker;
 import org.cloudbus.cloudsim.DatacenterCharacteristics;
-import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.Pe;
 import org.cloudbus.cloudsim.Storage;
@@ -33,14 +29,9 @@ import org.cloudbus.cloudsim.UtilizationModel;
 import org.cloudbus.cloudsim.UtilizationModelFull;
 import org.cloudbus.cloudsim.UtilizationModelNull;
 import org.cloudbus.cloudsim.UtilizationModelStochastic;
-import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.VmAllocationPolicySimple;
-import org.cloudbus.cloudsim.VmSchedulerTimeShared;
 import org.cloudbus.cloudsim.VmSchedulerTimeSharedOverSubscription;
 import org.cloudbus.cloudsim.core.CloudSim;
-import org.cloudbus.cloudsim.power.PowerHost;
-import org.cloudbus.cloudsim.power.PowerVm;
-import org.cloudbus.cloudsim.power.models.PowerModelSpecPowerHpProLiantMl110G4Xeon3040;
 import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
@@ -91,10 +82,10 @@ public class CloudSimExample1 {
             // Datacenters are the resource providers in CloudSim. We need at
             // list one of them to run a CloudSim simulation
             DatacenterPower datacenter0 = createDatacenter("Datacenter_0");
-            DatacenterPower datacenter1 = createDatacenter("Datacenter_1");
-            DatacenterPower datacenter2 = createDatacenter("Datacenter_2");
-            DatacenterPower datacenter3 = createDatacenter("Datacenter_2");
-            DatacenterPower datacenter4 = createDatacenter("Datacenter_2");
+//            DatacenterPower datacenter1 = createDatacenter("Datacenter_1");
+//            DatacenterPower datacenter2 = createDatacenter("Datacenter_2");
+//            DatacenterPower datacenter3 = createDatacenter("Datacenter_2");
+//            DatacenterPower datacenter4 = createDatacenter("Datacenter_2");
 
             // Third step: Create Broker
             DatacenterBrokerPower broker = createBroker();
@@ -121,7 +112,7 @@ public class CloudSimExample1 {
                 vm = new VmPower(i, brokerId, mips, pesNumber, ram, bw, size,1,  vmm,
 //                                                      new CloudletSchedulerSpaceSharedd(),0);
                         new CloudletSchedulerDynamicWorkload(mips, pesNumber)
-                        , 0);
+                        , INTERVAL);
                 vmlist.add(vm);
             }
 
@@ -140,23 +131,21 @@ public class CloudSimExample1 {
             long fileSize = 3000000;
             long outputSize = 3000000;
             UtilizationModel utilizationModel = new UtilizationModelFull();
-
-            for (int i = 0; i < 10; i++) {
-                Cloudlet cloudlet = new Cloudlet(i, 1000
+            
+            for (int i = 0; i < 1; i++) {
+                Cloudlet cloudlet = new Cloudlet(i, length
 //                        (long) (Math.random() * 10000) //                        1000
-                        , pesNumber, fileSize, outputSize,
+                        , 2, fileSize, outputSize,
                         new UtilizationModelStochastic(),
                         new UtilizationModelNull(),
                         new UtilizationModelNull());
-//                        utilizationModel, 
-//                        utilizationModel, 
-//                        utilizationModel);
+
                 cloudlet.setUserId(brokerId);
                 
                         
                 cloudletList.add(cloudlet);
                 
-//                cloudlet.setVmId(i % 10);
+//                cloudlet.setVmId(i);
             }
             // add the cloudlet to the list
 
@@ -222,48 +211,7 @@ public class CloudSimExample1 {
                 //                        new PowerModelSpecPowerHpProLiantMl110G4Xeon3040()
                 )
         ); // This is our machine
-        hostList.add(
-                new HostPower(
-                        2,
-                        new RamProvisionerSimple(ram),
-                        new BwProvisionerSimple(bw),
-                        storage,
-                        peList,
-//                                                new VmSchedulerTimeShared(peList)
-                        new VmSchedulerTimeSharedOverSubscription(peList)
-                //                        new PowerModelSpecPowerHpProLiantMl110G4Xeon3040()
-                )
-        ); // This is our machine
-        hostList.add(
-                new HostPower(
-                        3,
-                        new RamProvisionerSimple(ram),
-                        new BwProvisionerSimple(bw),
-                        storage,
-                        peList,
-                        new VmSchedulerTimeSharedOverSubscription(peList)
-//                                        new VmSchedulerTimeShared(peList)
-//                                        new PowerModelSpecPowerHpProLiantMl110G4Xeon3040()
-                )
-        ); // This is our machine
-        hostList.add(
-                new HostPower(
-                       4,
-                        new RamProvisionerSimple(ram),
-                        new BwProvisionerSimple(bw),
-                        storage,
-                        peList,
-                        new VmSchedulerTimeSharedOverSubscription(peList)
-//                                        new VmSchedulerTimeShared(peList)
-                //                        new PowerModelSpecPowerHpProLiantMl110G4Xeon3040()
-                )
-        ); // This is our machine
-
-//        ); // This is our machine
-        // 5. Create a DatacenterCharacteristics object that stores the
-        // properties of a data center: architecture, OS, list of
-        // Machines, allocation policy: time- or space-shared, time zone
-        // and its price (G$/Pe time unit).
+  
         String arch = "x86"; // system architecture
         String os = "Linux"; // operating system
         String vmm = "Xen";
@@ -283,7 +231,7 @@ public class CloudSimExample1 {
         // 6. Finally, we need to create a PowerDatacenter object.
         DatacenterPower datacenter = null;
         try { 
-            datacenter = new DatacenterPower(name, characteristics, new VmAllocationPolicySimple(hostList), storageList, 0);
+            datacenter = new DatacenterPower(name, characteristics, new VmAllocationPolicySimple(hostList), storageList, INTERVAL);
         } catch (Exception e) {
             e.printStackTrace();
         }

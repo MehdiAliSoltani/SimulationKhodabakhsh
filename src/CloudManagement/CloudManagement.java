@@ -129,6 +129,7 @@ public class CloudManagement extends SimEntity {
             case SCHEDULE_EVERY_HOUR:
                 System.gc();
                 int hour = snode.getRequestId();
+
                 admissionagent.setHour(hour);
                 admissionagent.readWorkload();
 //                admissionagent.createQueue();
@@ -172,10 +173,11 @@ public class CloudManagement extends SimEntity {
 //                    List<CloudletPower> cloudletlist = scheduler.createCloudletList(this.broker.getId(), admissionagent);
                     List<CloudletPower> cloudletlist = scheduler.createCloudletList(this.broker.getId());
                     
-//                    broker.submitCloudletList(cloudletlist);
+                    broker.submitCloudletList(cloudletlist);
                     scheduler.determineVmId(cloudletlist.get(1));
                     System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^" + cloudletlist.size());
                     CloudSim.resumeSimulation();
+                    Simulation.getCOMPUTE_SERVER_LIST(1).get(1).updateVmsProcessing(starttime);
 //                    DatacenterPower p = this.datacenterpower0;
 
 //                scheduler.createCloudletList(hour, null)

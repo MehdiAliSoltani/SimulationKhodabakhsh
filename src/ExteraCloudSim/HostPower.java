@@ -5,34 +5,22 @@
  */
 package ExteraCloudSim;
 
-import Agents.NetworkAgent;
 import Agents.ServerAgent;
-import Resource.Resource;
-import Test.CloudSimExample1;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.cloudbus.cloudsim.Cloudlet;
-import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.HostDynamicWorkload;
 import org.cloudbus.cloudsim.HostStateHistoryEntry;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.Pe;
-import org.cloudbus.cloudsim.ResCloudlet;
 import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.VmScheduler;
 import org.cloudbus.cloudsim.core.CloudSim;
-import org.cloudbus.cloudsim.lists.CloudletList;
 import org.cloudbus.cloudsim.lists.PeList;
-import org.cloudbus.cloudsim.power.PowerHost;
-import org.cloudbus.cloudsim.power.PowerVm;
 import org.cloudbus.cloudsim.provisioners.BwProvisioner;
 import org.cloudbus.cloudsim.provisioners.RamProvisioner;
 import simulation.AppConstants;
-import simulation.Simulation;
 
 /**
  *
@@ -164,7 +152,7 @@ public class HostPower extends HostDynamicWorkload {
             // set vm agent attributes
             vm.getVmagent().setVmtotalAllocatedMips(totalAllocatedMips);
             vm.getVmagent().setVmtotalRequestedMips(totalRequestedMips);
-            vm.getVmagent().setVmmipsUtilization(totalRequestedMips / vm.getMips() * 100);
+            vm.getVmagent().setVmmipsUtilization(totalRequestedMips / vm.getMips() * 100 );
 /*
             if (currentTime > 0.1 & flag) {
 
@@ -201,7 +189,7 @@ public class HostPower extends HostDynamicWorkload {
                         CloudSim.clock(),
                         totalAllocatedMips,
                         totalRequestedMips,
-                        vm.getMips(),
+                        vm.getMips() ,
                         totalRequestedMips / vm.getMips() * 100);
 
                 List<Pe> pes = getVmScheduler().getPesAllocatedForVM(vm);
@@ -239,7 +227,7 @@ public class HostPower extends HostDynamicWorkload {
                     totalAllocatedMips /= 0.9; // performance degradation due to migration - 10%
                 }
             }
-
+            System.out.println("\n\n\n---------------------------------------------");
             setUtilizationMips(getUtilizationMips() + totalAllocatedMips);
             hostTotalRequestedMips += totalRequestedMips;
         }
