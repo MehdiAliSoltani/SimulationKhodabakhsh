@@ -119,9 +119,9 @@ public class SchedulerAgent {
             @Override
             public int compare(NetworkAgent.TableValues o1, NetworkAgent.TableValues o2) {
                 if (o1.getAlpha() > o2.getAlpha()) {
-                    return -1;
-                } else if (o1.getAlpha() < o2.getAlpha()) {
                     return 1;
+                } else if (o1.getAlpha() < o2.getAlpha()) {
+                    return -1;
                 } else {
                     return 0;
                 }
@@ -136,7 +136,8 @@ public class SchedulerAgent {
         double mean = 0;
         int count = 0;
         // this part calculate the mean of alpha parameter in datacenter which contain data of cloudlet
-        for (int i = 0; i < tableRow.length; i++) {
+//    
+        for (int i = tableRow.length; i >0; i--) {
             if (tableRow[i].getDatacenterId() == dataStorageDcId) {
                 mean = mean + tableRow[i].getAlpha();
                 count++;
@@ -149,8 +150,8 @@ public class SchedulerAgent {
 //            hostPowerList.addAll(Simulation.getCOMPUTE_SERVER_LIST(i));
 //        }
         List<SelectedHost> selectedHost = new ArrayList<SelectedHost>();
+for (int i = tableRow.length; i >0; i--) {
 
-        for (int i = 0; i < tableRow.length; i++) {
             int dcId = tableRow[i].getDatacenterId();
             int csId = tableRow[i].getComputehostId();
             if (tableRow[i].getAlpha() < mean && dcId == dataStorageDcId) { // means first select appropriate hosts those are in the same datacenter as cloudlet

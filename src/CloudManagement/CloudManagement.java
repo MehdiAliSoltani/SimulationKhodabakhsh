@@ -174,7 +174,7 @@ public class CloudManagement extends SimEntity {
                     List<CloudletPower> cloudletlist = scheduler.createCloudletList(this.broker.getId());
                     
                     broker.submitCloudletList(cloudletlist);
-                    scheduler.determineVmId(cloudletlist.get(1));
+                 int vmId=  scheduler.determineVmId(cloudletlist.get(1));
                     System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^" + cloudletlist.size());
                     CloudSim.resumeSimulation();
                     Simulation.getCOMPUTE_SERVER_LIST(1).get(1).updateVmsProcessing(starttime);
