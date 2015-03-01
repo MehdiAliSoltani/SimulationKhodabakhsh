@@ -136,8 +136,7 @@ public class SchedulerAgent {
         double mean = 0;
         int count = 0;
         // this part calculate the mean of alpha parameter in datacenter which contain data of cloudlet
-//    
-        for (int i = tableRow.length; i >0; i--) {
+        for (int i = 0; i < tableRow.length; i++) {
             if (tableRow[i].getDatacenterId() == dataStorageDcId) {
                 mean = mean + tableRow[i].getAlpha();
                 count++;
@@ -150,8 +149,8 @@ public class SchedulerAgent {
 //            hostPowerList.addAll(Simulation.getCOMPUTE_SERVER_LIST(i));
 //        }
         List<SelectedHost> selectedHost = new ArrayList<SelectedHost>();
-for (int i = tableRow.length; i >0; i--) {
-
+//for (int i = tableRow.length; i >0; i--) {
+        for (int i = 0; i < tableRow.length; i++) {
             int dcId = tableRow[i].getDatacenterId();
             int csId = tableRow[i].getComputehostId();
             if (tableRow[i].getAlpha() < mean && dcId == dataStorageDcId) { // means first select appropriate hosts those are in the same datacenter as cloudlet
@@ -161,11 +160,10 @@ for (int i = tableRow.length; i >0; i--) {
 //                if (hostPower.) {
 //                    selectedHost.add(new SelectedHost(dataStroageId, csId));
 //                }
-               
-            }else{
-                 tableRow[i].setDatacenterId(ERROR_DATACENTER);
+
+            } else {
+                tableRow[i].setDatacenterId(ERROR_DATACENTER);
             }
-            
 
         }
         Iterator it = selectedHost.iterator();
@@ -198,13 +196,16 @@ for (int i = tableRow.length; i >0; i--) {
         Iterator it = vmPowerList.iterator();
         while (it.hasNext()) {
             VmPower vm = (VmPower) it.next();
+            int vmnoo = vm.getCloudletScheduler().runningCloudlets();
+//            int vmmn = vm.getCloudletScheduler().
             double vmMips = vm.getMips();
             if (vm.getNumberOfPes() == cloudlet.getNumberOfPes()) { // means a cloudlet with the multiple pes should be run on the vm with the same pes
-                double currentAvailibleMips = vm.getCurrentRequestedTotalMips() * vm.getNumberOfPes();
+                double test1 = vm.getCurrentRequestedTotalMips() ;
+                double currentAvailibleMips = vm.getCurrentRequestedTotalMips();// * vm.getNumberOfPes();
                 double currentFreeMips = vmMips * vm.getNumberOfPes() - currentAvailibleMips;
                 double vmUtilization = vm.getCurrentRequestedTotalMips() / (vm.getNumberOfPes() * vmMips);
                 if (currentFreeMips >= (cloudlet.getNumberOfPes() * vmMips * 0.5)) {
-                 return vm.getId();   
+                    return vm.getId();
                 }
             }
 

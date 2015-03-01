@@ -39,7 +39,8 @@ public class AppConstants {
 
 // datacenter specification
     public final static int NUM_DATACENTER = 2;
-    public final static int[] NUM_COMPUTE_SERVERS = {100, 100};
+//    public final static int[] NUM_COMPUTE_SERVERS = {100, 100};
+    public final static int[] NUM_COMPUTE_SERVERS = {10, 10};
     public final static int[] NUM_STORAGE_SERVERS = {10, 10};
 // networking    
     public final static List<Double> staticCoefficientTraficInDatacenter_0 = Arrays.asList(1.0, 1.5);
@@ -76,8 +77,8 @@ public class AppConstants {
 
 // VM specification
     public final static int[] VM_TYPE = {0, 1, 2, 3};
-//    public final static int[] NUM_of_VM_in_HOST = {4, 3, 3, 2};
-    public final static int[] NUM_of_VM_in_HOST = {1, 1, 1, 1};
+    public final static int[] NUM_of_VM_in_HOST = {4, 3, 3, 2};
+//    public final static int[] NUM_of_VM_in_HOST = {1, 1, 1, 1};
     public final static int[] VM_PES = {1, 2, 4, 8};
     public final static int[] VM_RAM = {2048, 3481, 7680, 10240};
     public final static int VM_MIPS = 10000;

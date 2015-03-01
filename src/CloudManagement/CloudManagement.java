@@ -64,7 +64,7 @@ public class CloudManagement extends SimEntity {
 //        Simulation.COMPUTE_SERVER_LIST  = 
         int numberofStorgehosts = 0;
         for (int i = 0; i < AppConstants.NUM_DATACENTER; i++) {
-            Simulation.COMPUTE_SERVER_LIST[i] = new ArrayList<HostPower>();  
+            Simulation.COMPUTE_SERVER_LIST[i] = new ArrayList<HostPower>();
             Arrays.fill(VM_NUM_TYPE[i], 0);
             numberofStorgehosts = +AppConstants.NUM_STORAGE_SERVERS[i];
 
@@ -161,30 +161,32 @@ public class CloudManagement extends SimEntity {
                     }
                     flag = false;
                     mutex.release();
-                    
+
                     createVms();
                     CloudSim.resumeSimulation();
 
                 } else {
-                    
-                    getNetworkAgent().setDynamicWTable();
-                    //ResourceAgent resourceAgent
-                    admissionagent.fillQueue(starttime);
+                    if (starttime > 0.2) {
+
+                        getNetworkAgent().setDynamicWTable();
+                        //ResourceAgent resourceAgent
+                        admissionagent.fillQueue(starttime);
 //                    List<CloudletPower> cloudletlist = scheduler.createCloudletList(this.broker.getId(), admissionagent);
-                    List<CloudletPower> cloudletlist = scheduler.createCloudletList(this.broker.getId());
-                    
-                    broker.submitCloudletList(cloudletlist);
-                 int vmId=  scheduler.determineVmId(cloudletlist.get(1));
-                    System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^" + cloudletlist.size());
-                    CloudSim.resumeSimulation();
-                    Simulation.getCOMPUTE_SERVER_LIST(1).get(1).updateVmsProcessing(starttime);
+                        List<CloudletPower> cloudletlist = scheduler.createCloudletList(this.broker.getId());
+
+                        broker.submitCloudletList(cloudletlist);
+                        int vmId = scheduler.determineVmId(cloudletlist.get(1));
+                        System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^" + cloudletlist.size());
+                        CloudSim.resumeSimulation();
+//                    Simulation.getCOMPUTE_SERVER_LIST(1).get(1).updateVmsProcessing(starttime);
 //                    DatacenterPower p = this.datacenterpower0;
 
 //                scheduler.createCloudletList(hour, null)
-                    //get the requests from the queue
-                    //initialize vm list
-                    //submit vm list
-                    System.out.println("start time " + starttime);
+                        //get the requests from the queue
+                        //initialize vm list
+                        //submit vm list
+                        System.out.println("start time " + starttime);
+                    }
                 }
                 break;
         }
@@ -202,7 +204,7 @@ public class CloudManagement extends SimEntity {
     private void createAgents() {
         admissionagent = new AdmissionAgent(AppConstants.DIRECTORY);
         networkAgent = new NetworkAgent(); // initialize network table 
-        scheduler = new SchedulerAgent(admissionagent,networkAgent);
+        scheduler = new SchedulerAgent(admissionagent, networkAgent);
 
     }
 
