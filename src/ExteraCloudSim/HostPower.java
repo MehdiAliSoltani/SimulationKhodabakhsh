@@ -105,11 +105,11 @@ public class HostPower extends HostDynamicWorkload {
 
         return (bwUtilization / this.getBw());
     }
-    
-    private void setDynamicWTable(){
+
+    private void setDynamicWTable() {
 //        NetworkAgent networkagent = new NetworkAgent();
 //        networkagent.
-        
+
     }
     static boolean flag = true;
 
@@ -119,18 +119,7 @@ public class HostPower extends HostDynamicWorkload {
         this.serveragent.setHostMaxCurrentUtilization(getMaxUtilization());
         this.serveragent.setHostPreviousUtilizationCpu(getPreviousUtilizationOfCpu());
         this.serveragent.setHostPreviousUtilizationMips(getPreviousUtilizationMips());
-        
-// this section should be removed;        
-//        System.out.println("MaxAvailableMips # " + getMaxAvailableMips());
-//        System.out.println("MaxUtilization# " + getMaxUtilization());
-//        System.out.println("PreviousUtilizationMips# " + getPreviousUtilizationMips());
-//        System.out.println("PreviousUtilizationCpu# " + getPreviousUtilizationOfCpu());
-//        System.out.println("getBwProvisioner().getAvailableBw() # " + getBwProvisioner().getAvailableBw());
-//        System.out.println("UtilizationMips# " + getUtilizationMips());
-//        System.out.println("UtilizationOfRam# " + getUtilizationOfRam());
-//        System.out.println("UtilizationOfCpu# " + getUtilizationOfCpu());
-//        System.out.println("UtilizationOfCpu# "+ getRamProvisioner().);
-        
+
         this.setBandwidthUtilization(getBwUtilization()); // set the bandwidth utilization for this host
         double smallerTime = super.updateVmsProcessing(currentTime);
         setPreviousUtilizationMips(getUtilizationMips());
@@ -152,81 +141,21 @@ public class HostPower extends HostDynamicWorkload {
             // set vm agent attributes
             vm.getVmagent().setVmtotalAllocatedMips(totalAllocatedMips);
             vm.getVmagent().setVmtotalRequestedMips(totalRequestedMips);
-            vm.getVmagent().setVmmipsUtilization(totalRequestedMips / vm.getMips() * 100 );
-/*
-            if (currentTime > 0.1 & flag) {
-
-                int idd = vm.getId();
-                boolean b = false;
-                List<Integer> l = new ArrayList<Integer>();
-                for (int i = 2; i < 10; i += 2) {
-                    b = vm.getCloudletScheduler().cloudletPause(i);
-                    if (b) {
-                        flag = false;
-                        l.add(i);
-                        System.out.println(" vm.getCloudletScheduler().getCloudletStatus  " + i + "  " + vm.getCloudletScheduler().getCloudletStatus(i));
-                    }
-                }
-            }
-
-            if (currentTime > 1) {
-                for (int i = 0; i < 10; i++) {
-                    vm.getCloudletScheduler().cloudletResume(i);
-
-                    System.out.println(" vm.getCloudletScheduler().getCloudletStatus  " + i + "  " + vm.getCloudletScheduler().getCloudletStatus(i));
-
-                }
-            }
-            System.out.println("getUtilizationOfBw "+getUtilizationOfBw());
-            System.out.println("getUtilizationOfram "+getUtilizationOfRam());
-            */
+            vm.getVmagent().setVmmipsUtilization(totalRequestedMips / vm.getMips() * 100);
 ////////////////////////            
             if (!Log.isDisabled()) {
                 Log.formatLine(
-                        "%.2f: Datacenter # " + getDatacenter().getId() + " [Host #" + getId() + "] Total allocated MIPS for VM #" + vm.getId()
+                        "%.2f: *** ** * Datacenter # " + getDatacenter().getId() + " [Host #" + getId() + "] Total allocated MIPS for VM #" + vm.getId()
                         + " (Host #" + vm.getHost().getId()
                         + ") is %.2f, was requested %.2f out of total %.2f (%.2f%%)",
                         CloudSim.clock(),
                         totalAllocatedMips,
                         totalRequestedMips,
-                        vm.getMips() ,
-                        totalRequestedMips / vm.getMips() * 100);
+                        vm.getMips() * vm.getNumberOfPes(),
+                        totalRequestedMips / (vm.getMips() * vm.getNumberOfPes()) * 100);
 
-                List<Pe> pes = getVmScheduler().getPesAllocatedForVM(vm);
-                StringBuilder pesString = new StringBuilder();
-                for (Pe pe : pes) {
-                    pesString.append(String.format(" PE #" + pe.getId() + ": %.2f.", pe.getPeProvisioner()
-                            .getTotalAllocatedMipsForVm(vm)));
-                }
-                Log.formatLine(
-                        "%.2f: [Host #" + getId() + "] MIPS for VM #" + vm.getId() + " by PEs ("
-                        + getNumberOfPes() + " * " + getVmScheduler().getPeCapacity() + ")."
-                        + pesString,
-                        CloudSim.clock());
             }
 
-            if (getVmsMigratingIn().contains(vm)) {
-                Log.formatLine("%.2f: [Host #" + getId() + "] VM #" + vm.getId()
-                        + " is being migrated to Host #" + getId(), CloudSim.clock());
-            } else {
-                if (totalAllocatedMips + 0.1 < totalRequestedMips) {
-                    Log.formatLine("%.2f: [Host #" + getId() + "] Under allocated MIPS for VM #" + vm.getId()
-                            + ": %.2f", CloudSim.clock(), totalRequestedMips - totalAllocatedMips);
-                }
-
-                vm.addStateHistoryEntry(
-                        currentTime,
-                        totalAllocatedMips,
-                        totalRequestedMips,
-                        (vm.isInMigration() && !getVmsMigratingIn().contains(vm)));
-
-                if (vm.isInMigration()) {
-                    Log.formatLine(
-                            "%.2f: [Host #" + getId() + "] VM #" + vm.getId() + " is in migration",
-                            CloudSim.clock());
-                    totalAllocatedMips /= 0.9; // performance degradation due to migration - 10%
-                }
-            }
             System.out.println("\n\n\n---------------------------------------------");
             setUtilizationMips(getUtilizationMips() + totalAllocatedMips);
             hostTotalRequestedMips += totalRequestedMips;
@@ -412,5 +341,5 @@ public class HostPower extends HostDynamicWorkload {
     public ServerAgent getServeragent() {
         return serveragent;
     }
-    
+
 }

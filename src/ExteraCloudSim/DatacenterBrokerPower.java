@@ -154,6 +154,7 @@ public class DatacenterBrokerPower extends DatacenterBroker{
         protected void submitCloudlets() {
             // determine VmId
 		int vmIndex = 0;
+//                List<Cloudlet> c = getCloudletList();
 		for (Cloudlet cloudlet : getCloudletList()) {
 			Vm vm;
 			// if user didn't bind this cloudlet and it has not been executed yet
@@ -182,4 +183,12 @@ public class DatacenterBrokerPower extends DatacenterBroker{
 			getCloudletList().remove(cloudlet);
 		}
 	}
+        public void doCloudlet(CloudletPower cloudlet , int vmId){
+            			cloudlet.setVmId(vmId);
+                                Log.printLine(CloudSim.clock()+ ": "+ getName()+ " : Sending cloudlet" +
+                                        cloudlet.getCloudletId() + " to VM #" + vmId);
+			sendNow(getVmsToDatacentersMap().get(vmId), CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
+                        
+
+        }
 }

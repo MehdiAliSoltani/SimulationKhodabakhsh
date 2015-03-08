@@ -40,7 +40,8 @@ public class AppConstants {
 // datacenter specification
     public final static int NUM_DATACENTER = 2;
 //    public final static int[] NUM_COMPUTE_SERVERS = {100, 100};
-    public final static int[] NUM_COMPUTE_SERVERS = {10, 10};
+//    public final static int[] NUM_COMPUTE_SERVERS = {10, 10};
+    public final static int[] NUM_COMPUTE_SERVERS = {2, 2};
     public final static int[] NUM_STORAGE_SERVERS = {10, 10};
 // networking    
     public final static List<Double> staticCoefficientTraficInDatacenter_0 = Arrays.asList(1.0, 1.5);
@@ -87,8 +88,10 @@ public class AppConstants {
 // Queue specification
     public final static int NUM_QUEUE = 4;
 
-    public final static double SCHEDULING_INTERVAL = 0.1; //mili second
-    public final static double SCHEDULING_PER_SECOND = 0.1; //mili second
+//    public final static double SCHEDULING_INTERVAL = 0.1; //mili second
+//    public final static double SCHEDULING_PER_SECOND = 0.1; //mili second
+    public final static double SCHEDULING_INTERVAL = 1.0; //mili second
+    public final static double SCHEDULING_PER_SECOND = 1.0; //mili second
 
     public static final int PROCESS_CREATEVM_In_HOST = 1358;
     public  static final String DIRECTORY = "D:\\Workload";
@@ -97,6 +100,7 @@ public class AppConstants {
     public static final int MIN_FILESIZE =2000; //2K
     public static final int MAX_FILESIZE =10000000; // 10MB
     public static final int MEAN_FILESIZE =500000; // KB
+    public  static final int NOT_SUITABLE_VM_FOUND = -100; // return when a suitable vm is not found
     
     
 }

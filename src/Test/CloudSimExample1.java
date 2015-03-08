@@ -30,6 +30,7 @@ import org.cloudbus.cloudsim.UtilizationModelFull;
 import org.cloudbus.cloudsim.UtilizationModelNull;
 import org.cloudbus.cloudsim.UtilizationModelStochastic;
 import org.cloudbus.cloudsim.VmAllocationPolicySimple;
+import org.cloudbus.cloudsim.VmSchedulerTimeShared;
 import org.cloudbus.cloudsim.VmSchedulerTimeSharedOverSubscription;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
@@ -127,7 +128,7 @@ public class CloudSimExample1 {
 
             // Cloudlet properties
             int id = 0;
-            long length = 10000;
+            long length = 1000000;
             long fileSize = 3000000;
             long outputSize = 3000000;
             UtilizationModel utilizationModel = new UtilizationModelFull();
@@ -136,7 +137,7 @@ public class CloudSimExample1 {
                 Cloudlet cloudlet = new Cloudlet(i, length
 //                        (long) (Math.random() * 10000) //                        1000
                         , 2, fileSize, outputSize,
-                        new UtilizationModelStochastic(),
+                        new UtilizationModelStochastic(100),
                         new UtilizationModelNull(),
                         new UtilizationModelNull());
 
@@ -199,18 +200,18 @@ public class CloudSimExample1 {
 
                 )
         ); // This is our machine
-        hostList.add(
-                new HostPower(
-                        1,
-                        new RamProvisionerSimple(ram),
-                        new BwProvisionerSimple(bw),
-                        storage,
-                        peList,
-//                                                new VmSchedulerTimeShared(peList)
-                        new VmSchedulerTimeSharedOverSubscription(peList)
-                //                        new PowerModelSpecPowerHpProLiantMl110G4Xeon3040()
-                )
-        ); // This is our machine
+//        hostList.add(
+//                new HostPower(
+//                        1,
+//                        new RamProvisionerSimple(ram),
+//                        new BwProvisionerSimple(bw),
+//                        storage,
+//                        peList,
+////                                                new VmSchedulerTimeShared(peList)
+//                        new VmSchedulerTimeSharedOverSubscription(peList)
+//                //                        new PowerModelSpecPowerHpProLiantMl110G4Xeon3040()
+//                )
+//        ); // This is our machine
   
         String arch = "x86"; // system architecture
         String os = "Linux"; // operating system

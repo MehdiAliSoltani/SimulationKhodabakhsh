@@ -26,7 +26,7 @@ import simulation.Simulation;
 public class SchedulerAgent {
 
     private static final int ERROR_DATACENTER = Integer.MIN_VALUE;
-    private static final int NOT_SUITABLE = -100;
+
     private AdmissionAgent admissionagent;
     private NetworkAgent networkAgent;
     List<CloudletPower> cloudletlist = new ArrayList<CloudletPower>();
@@ -44,6 +44,7 @@ public class SchedulerAgent {
      */
 //    public List<CloudletPower> createCloudletList(int userId, AdmissionAgent admissionagent) {
     public List<CloudletPower> createCloudletList(int userId) {
+        cloudletlist.clear();
         QueuingAgent queuingAgent = getAdmissionagent().queuingagent;
 //        QueuingAgent qa = new QueuingAgent();
 //        Queue<Workload>[] sq = qa.getSystemQueue();
@@ -110,6 +111,7 @@ public class SchedulerAgent {
     }
 
     public int determineVmId(CloudletPower cloudlet) {
+        int vmId = 0;
         int dataStorageDcId = cloudlet.getDataStorageDatacenterId();
         int dataStroageId = cloudlet.getDataStorageId();
         int pesNeeded = cloudlet.getNumberOfPes();
@@ -133,51 +135,81 @@ public class SchedulerAgent {
 
         //tableRow sorted ascending according to alpha parameter
         boolean flag = true;
-        double mean = 0;
-        int count = 0;
+        double meanIn = 0;
+        double meanOut = 0;
+        int countIn = 0;
+        int countOut = 0;
         // this part calculate the mean of alpha parameter in datacenter which contain data of cloudlet
         for (int i = 0; i < tableRow.length; i++) {
             if (tableRow[i].getDatacenterId() == dataStorageDcId) {
-                mean = mean + tableRow[i].getAlpha();
-                count++;
+                meanIn = meanIn + tableRow[i].getAlpha();
+                countIn++;
+            } else {
+                meanOut = meanOut + tableRow[i].getAlpha();
+                countOut++;
             }
         }
-        mean = mean / count;
+        meanIn = meanIn / countIn;
+        meanOut = meanOut / countOut;
 //        List<Integer,Integer> appropriateList = new ArrayList<Integer,Integer>();
 //        List<HostPower> hostPowerList;
 //        for (int i = 0; i < AppConstants.NUM_DATACENTER; i++) {
 //            hostPowerList.addAll(Simulation.getCOMPUTE_SERVER_LIST(i));
 //        }
         List<SelectedHost> selectedHost = new ArrayList<SelectedHost>();
-//for (int i = tableRow.length; i >0; i--) {
+
         for (int i = 0; i < tableRow.length; i++) {
             int dcId = tableRow[i].getDatacenterId();
             int csId = tableRow[i].getComputehostId();
-            if (tableRow[i].getAlpha() < mean && dcId == dataStorageDcId) { // means first select appropriate hosts those are in the same datacenter as cloudlet
+            if (tableRow[i].getAlpha() < meanIn && dcId == dataStorageDcId) { // means first select appropriate hosts those are in the same datacenter as cloudlet
                 HostPower hostPower = Simulation.getOneHost(dcId, csId);    //select the host from host list in datacenter             
-                int vmId = isHostHasEnoughMips(hostPower, cloudlet);
-                return vmId;
+                vmId = isHostHasEnoughMips(hostPower, cloudlet);
+                if (vmId != AppConstants.NOT_SUITABLE_VM_FOUND) {
+                    break;
+                }
+//                return vmId;
 //                if (hostPower.) {
 //                    selectedHost.add(new SelectedHost(dataStroageId, csId));
 //                }
 
             } else {
-                tableRow[i].setDatacenterId(ERROR_DATACENTER);
+//                tableRow[i].setDatacenterId(ERROR_DATACENTER);
             }
 
         }
-        Iterator it = selectedHost.iterator();
-        while (it.hasNext()) {
-            SelectedHost shost = (SelectedHost) it.next();
-            HostPower hostpower = Simulation.getOneHost(shost.getHostId(), shost.getHostId());
+        /////////*******
+        if (vmId == AppConstants.NOT_SUITABLE_VM_FOUND) {
+            for (int i = 0; i < tableRow.length; i++) {
+                int dcId = tableRow[i].getDatacenterId();
+                int csId = tableRow[i].getComputehostId();
+                if (tableRow[i].getAlpha() < meanOut && dcId != dataStorageDcId && tableRow[i].getDatacenterId() != ERROR_DATACENTER) { // means first select appropriate hosts those are in the same datacenter as cloudlet
+                    HostPower hostPower = Simulation.getOneHost(dcId, csId);    //select the host from host list in datacenter             
+                    vmId = isHostHasEnoughMips(hostPower, cloudlet);
+                    return vmId;
+//                if (hostPower.) {
+//                    selectedHost.add(new SelectedHost(dataStroageId, csId));
+//                }
 
+                } else {
+//                    tableRow[i].setDatacenterId(ERROR_DATACENTER);
+                }
+
+            }
         }
+        ///////////////////***
+//        Iterator it = selectedHost.iterator();
+//        while (it.hasNext()) {
+//            SelectedHost shost = (SelectedHost) it.next();
+//            HostPower hostpower = Simulation.getOneHost(shost.getHostId(), shost.getHostId());
+//
+//        }
+//
+//        for (int i = 0; i < selectedHost.size(); i++) {
+//            Simulation.getOneHost(dataStroageId, countIn);
+//        }
+//
+        return vmId;
 
-        for (int i = 0; i < selectedHost.size(); i++) {
-            Simulation.getOneHost(dataStroageId, count);
-        }
-
-        return 0;
     }
 
     /**
@@ -200,7 +232,7 @@ public class SchedulerAgent {
 //            int vmmn = vm.getCloudletScheduler().
             double vmMips = vm.getMips();
             if (vm.getNumberOfPes() == cloudlet.getNumberOfPes()) { // means a cloudlet with the multiple pes should be run on the vm with the same pes
-                double test1 = vm.getCurrentRequestedTotalMips() ;
+                double test1 = vm.getCurrentRequestedTotalMips();
                 double currentAvailibleMips = vm.getCurrentRequestedTotalMips();// * vm.getNumberOfPes();
                 double currentFreeMips = vmMips * vm.getNumberOfPes() - currentAvailibleMips;
                 double vmUtilization = vm.getCurrentRequestedTotalMips() / (vm.getNumberOfPes() * vmMips);
@@ -211,7 +243,7 @@ public class SchedulerAgent {
 
         }
 //        double approximatePesAvailible = maxAvailibleMips;
-        return NOT_SUITABLE;
+        return AppConstants.NOT_SUITABLE_VM_FOUND;
     }
 
     public AdmissionAgent getAdmissionagent() {

@@ -16,10 +16,16 @@ import Resource.StorageHost;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.cloudbus.cloudsim.Cloudlet;
+import org.cloudbus.cloudsim.UtilizationModel;
+import org.cloudbus.cloudsim.UtilizationModelFull;
+import org.cloudbus.cloudsim.UtilizationModelNull;
+import org.cloudbus.cloudsim.UtilizationModelStochastic;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.core.SimEntity;
 import org.cloudbus.cloudsim.core.SimEvent;
@@ -40,9 +46,10 @@ public class CloudManagement extends SimEntity {
     private final static int SCHEDULE_EVERY_HOUR = 0;
     private final static int SCHEDULE_EVERY_FIVE_MINUTE = 1;
     private final static int SCHEDULE_EVERY_SECOND = 2;
+    private final static int NUMBER_SCHEDULE_EVERY_SECOND = 1;
     private AdmissionAgent admissionagent;// = new AdmissionAgent(AppConstants.DIRECTORY);
     CreateResources resource = new CreateResources();
-    private DatacenterBrokerPower broker;
+    DatacenterBrokerPower broker;
     DatacenterPower datacenterpower0;
     DatacenterPower datacenterpower1;
     SchedulerAgent scheduler;// = new SchedulerAgent();
@@ -52,16 +59,16 @@ public class CloudManagement extends SimEntity {
     public CloudManagement(String name) {
         super(name);
 
-        try {
-            broker = new DatacenterBrokerPower("Broker");
-        } catch (Exception ex) {
-            Logger.getLogger(CloudManagement.class.getName()).log(Level.SEVERE, null, ex);
-        }
         createCloud();
     }
 
     private void createCloud() {
 //        Simulation.COMPUTE_SERVER_LIST  = 
+        try {
+            broker = new DatacenterBrokerPower("Broker");
+        } catch (Exception ex) {
+            Logger.getLogger(CloudManagement.class.getName()).log(Level.SEVERE, null, ex);
+        }
         int numberofStorgehosts = 0;
         for (int i = 0; i < AppConstants.NUM_DATACENTER; i++) {
             Simulation.COMPUTE_SERVER_LIST[i] = new ArrayList<HostPower>();
@@ -100,6 +107,19 @@ public class CloudManagement extends SimEntity {
 
     }
 
+    private void TempcreateVms() {
+        for (int i = 0; i < AppConstants.VM_TYPE.length; i++) {
+//            resource0.createVM(this.broker.getId(), AppConstants.VM_TYPE[i]);
+            resource.TempcreateVM(this.broker.getId(), AppConstants.VM_TYPE[i], 0);
+        }
+        for (int i = 0; i < AppConstants.VM_TYPE.length; i++) {
+//            resource1.createVM(this.broker.getId(), AppConstants.VM_TYPE[i]);
+            resource.TempcreateVM(this.broker.getId(), AppConstants.VM_TYPE[i], 1);
+        }
+        this.broker.submitVmList(VMLIST);
+
+    }
+
     @Override
     public void startEntity() {
         createAgents();
@@ -117,6 +137,7 @@ public class CloudManagement extends SimEntity {
 
     }
     boolean flag = true;
+    static boolean f = true;
 
     @Override
     public void processEvent(SimEvent ev) {
@@ -142,7 +163,7 @@ public class CloudManagement extends SimEntity {
                 //load workload into queue
                 break;
             case SCHEDULE_EVERY_FIVE_MINUTE:
-                for (int i = 0; i < AppConstants.EVERY_FIVE * 60; i++) {
+                for (int i = 0; i < AppConstants.EVERY_FIVE * 60 * NUMBER_SCHEDULE_EVERY_SECOND; i++) {
                     double delay = starttime + (i * AppConstants.SCHEDULING_PER_SECOND);
                     ScheduleNode snodeSecond = new ScheduleNode(delay, 0);
                     schedule(destination, delay - starttime, SCHEDULE_EVERY_SECOND, snodeSecond);
@@ -162,7 +183,8 @@ public class CloudManagement extends SimEntity {
                     flag = false;
                     mutex.release();
 
-                    createVms();
+//                    createVms();
+                    TempcreateVms();
                     CloudSim.resumeSimulation();
 
                 } else {
@@ -174,13 +196,35 @@ public class CloudManagement extends SimEntity {
 //                    List<CloudletPower> cloudletlist = scheduler.createCloudletList(this.broker.getId(), admissionagent);
                         List<CloudletPower> cloudletlist = scheduler.createCloudletList(this.broker.getId());
 
-                        broker.submitCloudletList(cloudletlist);
-                        int vmId = scheduler.determineVmId(cloudletlist.get(1));
-                        System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^" + cloudletlist.size());
+                        Iterator it = cloudletlist.iterator();
+                        while (it.hasNext()) {
+                            CloudletPower cloudlet = (CloudletPower) it.next();
+                            int vmId = scheduler.determineVmId(cloudlet);
+                            if (vmId != AppConstants.NOT_SUITABLE_VM_FOUND) {
+                                broker.doCloudlet(cloudlet, vmId);
+                            } else {
+                                System.out.println("Cloudlet is failed");
+                            }
+                        }
+
+                        System.out.println("*************************************** " + cloudletlist.size());
+//                        broker.submitCloudletList(cloudletlist);
+
+//                        int vmId = scheduler.determineVmId(cloudletlist.get(1));
+//                        System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^" + cloudletlist.size());
                         CloudSim.resumeSimulation();
+
+                        for (int i = 0; i < AppConstants.NUM_DATACENTER; i++) {
+                            Iterator itt = Simulation.getCOMPUTE_SERVER_LIST(i).iterator();
+                            while (itt.hasNext()) {
+                                HostPower host = (HostPower) itt.next();
+                                host.updateVmsProcessing(starttime);
+                            }
+                        }
+
+                        //    ّ
 //                    Simulation.getCOMPUTE_SERVER_LIST(1).get(1).updateVmsProcessing(starttime);
 //                    DatacenterPower p = this.datacenterpower0;
-
 //                scheduler.createCloudletList(hour, null)
                         //get the requests from the queue
                         //initialize vm list
@@ -229,3 +273,44 @@ public class CloudManagement extends SimEntity {
     }
 
 }
+/*
+ ////////////////////////////////////////  
+ //                        DatacenterBrokerPower b = null;
+ //                        try {
+ //                             b = new DatacenterBrokerPower("");
+ //                        } catch (Exception ex) {
+ //                            Logger.getLogger(CloudManagement.class.getName()).log(Level.SEVERE, null, ex);
+ //                        }
+
+ List<Cloudlet> cloudletList;
+ cloudletList = new ArrayList<Cloudlet>();
+
+ for (int i = 0; i < 10; i++) {
+
+ // Cloudlet properties
+ int id = 0;
+ long length = 100000;
+ long fileSize = 3000;
+ long outputSize = 3000;
+
+ Cloudlet cloudlet = new Cloudlet(i, length //                        (long) (Math.random() * 10000) //                        1000
+ , 2, fileSize, outputSize,
+ new UtilizationModelStochastic(),
+ new UtilizationModelNull(),
+ new UtilizationModelNull());
+
+ cloudlet.setUserId(broker.getId());
+ cloudlet.setVmId(1);
+ broker.doCloudlet(cloudlet, i);
+ //                            broker.bindCloudletToVm(cloudlet.getCloudletId(), 1);
+
+ cloudletList.add(cloudlet);
+
+ }
+ int bid = broker.getId();
+ broker.submitCloudletList(cloudletList);
+ //                        b.submitCloudletList(cloudletList);
+ List<Cloudlet> c = broker.getCloudletList();
+ //////////////////////////////////    
+
+ */

@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import org.cloudbus.cloudsim.Cloudlet;
+import org.cloudbus.cloudsim.CloudletSchedulerDynamicWorkload;
 import org.cloudbus.cloudsim.CloudletSchedulerSpaceShared;
 import org.cloudbus.cloudsim.CloudletSchedulerTimeShared;
 import org.cloudbus.cloudsim.DatacenterCharacteristics;
@@ -26,6 +27,7 @@ import org.cloudbus.cloudsim.UtilizationModelNull;
 import org.cloudbus.cloudsim.UtilizationModelStochastic;
 import org.cloudbus.cloudsim.VmAllocationPolicySimple;
 import org.cloudbus.cloudsim.VmSchedulerTimeShared;
+import org.cloudbus.cloudsim.VmSchedulerTimeSharedOverSubscription;
 import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
@@ -101,7 +103,9 @@ public class CreateResources {
                     new BwProvisionerSimple(AppConstants.CS_BAND_WIDTH),
                     AppConstants.STORAGE_per_CS,
                     peList,
-                    new VmSchedulerTimeShared(peList)));
+//                    new VmSchedulerTimeShared(peList)
+                    new VmSchedulerTimeSharedOverSubscription(peList)
+            ));
 
         }
     }
@@ -136,12 +140,43 @@ public class CreateResources {
                     size,
                     1,
                     vmm,
-                    new CloudletSchedulerSpaceShared(), 0);
+                      new CloudletSchedulerDynamicWorkload(mips, pesNumber) ,0);
+//                    new CloudletSchedulerSpaceShared(), 0);
 //                    new CloudletSchedulerTimeShared(), 0);
             Simulation.VMLIST.add(vmpower);
             incrementVmNumber(vmtype, datacenterId);
 //            System.out.println(""+Simulation.VM_NUM_TYPE[this.datacenterID][vmtype]);
         }
+
+    }
+    public void TempcreateVM(int userId, int vmtype, int datacenterId) {
+
+        //VM Parameters
+        long size = AppConstants.VM_IMAGE_SIZE[vmtype]; //image size (MB)
+        int ram = AppConstants.VM_RAM[vmtype]; //vm memory (MB)
+        int mips = AppConstants.VM_MIPS;
+        long bw = AppConstants.VM_BAND_WIDTH[vmtype];
+        int pesNumber = AppConstants.VM_PES[vmtype]; //number of cpus
+        String vmm = "Xen"; //VMM name
+
+        //create VMs
+        int vmNum = AppConstants.NUM_of_VM_in_HOST[vmtype] * AppConstants.NUM_COMPUTE_SERVERS[datacenterId];
+            VmPower vmpower = new VmPower(getVmId(),
+                    userId,
+                    mips,
+                    pesNumber,
+                    ram,
+                    bw,
+                    size,
+                    1,
+                    vmm,
+                      new CloudletSchedulerDynamicWorkload(mips, pesNumber) ,0);
+//                    new CloudletSchedulerSpaceShared(), 0);
+//                    new CloudletSchedulerTimeShared(), 0);
+            Simulation.VMLIST.add(vmpower);
+            incrementVmNumber(vmtype, datacenterId);
+//            System.out.println(""+Simulation.VM_NUM_TYPE[this.datacenterID][vmtype]);
+        
 
     }
 
