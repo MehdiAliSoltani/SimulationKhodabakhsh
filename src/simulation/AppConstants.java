@@ -41,7 +41,7 @@ public class AppConstants {
     public final static int NUM_DATACENTER = 2;
 //    public final static int[] NUM_COMPUTE_SERVERS = {100, 100};
 //    public final static int[] NUM_COMPUTE_SERVERS = {10, 10};
-    public final static int[] NUM_COMPUTE_SERVERS = {2, 2};
+    public final static int[] NUM_COMPUTE_SERVERS = {1, 1};
     public final static int[] NUM_STORAGE_SERVERS = {10, 10};
 // networking    
     public final static List<Double> staticCoefficientTraficInDatacenter_0 = Arrays.asList(1.0, 1.5);
@@ -101,6 +101,12 @@ public class AppConstants {
     public static final int MAX_FILESIZE =10000000; // 10MB
     public static final int MEAN_FILESIZE =500000; // KB
     public  static final int NOT_SUITABLE_VM_FOUND = -100; // return when a suitable vm is not found
+    public  static final int CLASS_5 = 5;
+    public  static final int CLASS_4 = 4;
+    public  static final int CLASS_3 = 3;
+    public  static final int CLASS_2 = 2;
+    public  static final int CLASS_1 = 1;
+    
     
     
 }

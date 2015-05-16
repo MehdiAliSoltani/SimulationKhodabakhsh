@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ClassDiagram name="Reverse engineered Agents 2015.05.05 11-44-35-704">
+  <ClassDiagramComponents>
+    <Class xPosition="20.0" yPosition="20.0" package="Agents" name="AdmissionAgent" visibility="public">
+      <Constructors>
+        <Constructor name="AdmissionAgent" visibility="public">
+          <Argument type="String" name="directory"/>
+        </Constructor>
+      </Constructors>
+      <Fields>
+        <Field name="list_of_list_of_workload" visibility="package" type="List&lt;List&lt;Workload&gt;&gt;"/>
+        <Field name="queuingagent" visibility="package" type="QueuingAgent"/>
+        <Field name="directory" visibility="package" type="String"/>
+        <Field name="hour" visibility="package" type="int"/>
+      </Fields>
+      <Methods>
+        <Method name="readWorkload" visibility="public" returnType="void"/>
+        <Method name="fillQueue" visibility="public" returnType="void">
+          <Argument type="double" name="starttime"/>
+        </Method>
+        <Method name="createQueue" visibility="public" returnType="void"/>
+        <Method name="setHour" visibility="public" returnType="void">
+          <Argument type="int" name="hour"/>
+        </Method>
+      </Methods>
+    </Class>
+    <Class xPosition="320.0" yPosition="20.0" package="Agents" name="MigrationAgent" visibility="public">
+      <Constructors/>
+      <Fields/>
+      <Methods/>
+    </Class>
+    <Class xPosition="620.0" yPosition="20.0" package="Agents" name="MonitoringAgent" visibility="public">
+      <Constructors/>
+      <Fields/>
+      <Methods/>
+    </Class>
+    <Class xPosition="920.0" yPosition="20.0" package="Agents" name="NetworkAgent" visibility="public">
+      <Constructors>
+        <Constructor name="NetworkAgent" visibility="public"/>
+      </Constructors>
+      <Fields>
+        <Field name="initWTable" visibility="private" type="Map&lt;Keys, TableValues[]&gt;" isStatic="true"/>
+        <Field name="WTable" visibility="private" type="Map&lt;Keys, TableValues[]&gt;" isStatic="true"/>
+        <Field name="dataStorage" visibility="package" type="int"/>
+      </Fields>
+      <Methods>
+        <Method name="initializeWTable" visibility="public" returnType="void"/>
+        <Method name="setDynamicWTable" visibility="public" returnType="void"/>
+        <Method name="setWTableElement" visibility="public" returnType="void">
+          <Argument type="int" name="dataStorageDcId"/>
+          <Argument type="int" name="dataStorageId"/>
+          <Argument type="int" name="cSDcId"/>
+          <Argument type="int" name="hostId"/>
+          <Argument type="double" name="alpha"/>
+        </Method>
+        <Method name="getWTableElement" visibility="public" returnType="double">
+          <Argument type="int" name="dataStorageDcId"/>
+          <Argument type="int" name="dataStorageId"/>
+          <Argument type="int" name="cSDcId"/>
+          <Argument type="int" name="hostId"/>
+          <Argument type="double" name="alpha"/>
+        </Method>
+        <Method name="getInitWtable" visibility="public" returnType="double">
+          <Argument type="int" name="dataStorageDcId"/>
+          <Argument type="int" name="dataStorageId"/>
+          <Argument type="int" name="cSDcId"/>
+          <Argument type="int" name="hostId"/>
+          <Argument type="double" name="alpha"/>
+        </Method>
+        <Method name="getRandomTrafficCoeff" visibility="private" returnType="double">
+          <Argument type="double" name="rangeMax"/>
+          <Argument type="double" name="rangeMin"/>
+        </Method>
+        <Method name="getWTableRow" visibility="public" returnType="TableValues[]">
+          <Argument type="int" name="dataStorageDcId"/>
+          <Argument type="int" name="dataStorageId"/>
+        </Method>
+        <Method name="getInitWTable" visibility="public" returnType="Map&lt;Keys, TableValues[]&gt;"/>
+        <Method name="setInitWTable" visibility="public" returnType="void">
+          <Argument type="Map&lt;Keys, TableValues[]&gt;" name="initWTable"/>
+        </Method>
+        <Method name="getWTable" visibility="public" returnType="Map&lt;Keys, TableValues[]&gt;"/>
+        <Method name="setWTable" visibility="public" returnType="void">
+          <Argument type="Map&lt;Keys, TableValues[]&gt;" name="WTable"/>
+        </Method>
+      </Methods>
+    </Class>
+    <Class xPosition="20.0" yPosition="420.0" package="Agents" name="QueuingAgent" visibility="public">
+      <Constructors>
+        <Constructor name="QueuingAgent" visibility="public"/>
+      </Constructors>
+      <Fields>
+        <Field name="systemQueue" visibility="private" type="Queue&lt;Workload&gt;[]" isStatic="true"/>
+      </Fields>
+      <Methods>
+        <Method name="getSystemQueue" visibility="public" returnType="Queue[]"/>
+        <Method name="getSystemQueue" visibility="public" returnType="Queue">
+          <Argument type="int" name="queueNumber"/>
+        </Method>
+        <Method name="addQueue" visibility="public" returnType="void">
+          <Argument type="Workload" name="workload"/>
+          <Argument type="int" name="queueNumber"/>
+        </Method>
+        <Method name="getElement" visibility="public" returnType="Workload">
+          <Argument type="int" name="queueNumber"/>
+        </Method>
+        <Method name="removeElement" visibility="public" returnType="Workload">
+          <Argument type="int" name="queueNumber"/>
+        </Method>
+        <Method name="numberofElements" visibility="public" returnType="int">
+          <Argument type="int" name="queueNumber"/>
+        </Method>
+        <Method name="numberofActiveQueue" visibility="public" returnType="int"/>
+      </Methods>
+    </Class>
+    <Class xPosition="320.0" yPosition="420.0" package="Agents" name="ResourceAgent" visibility="public">
+      <Constructors/>
+      <Fields/>
+      <Methods>
+        <Method name="getSystemMaxAvaiiableMips" visibility="public" returnType="double"/>
+        <Method name="getSystemMaxCurrentUtilization" visibility="public" returnType="double"/>
+        <Method name="getApproximationNumberofPes" visibility="public" returnType="double"/>
+      </Methods>
+    </Class>
+    <Class xPosition="620.0" yPosition="420.0" package="Agents" name="ResourceManagerAgent" visibility="public">
+      <Constructors/>
+      <Fields/>
+      <Methods/>
+    </Class>
+    <Class xPosition="920.0" yPosition="420.0" package="Agents" name="SchedulerAgent" visibility="public">
+      <Constructors>
+        <Constructor name="SchedulerAgent" visibility="public">
+          <Argument type="AdmissionAgent" name="admissionagent"/>
+          <Argument type="NetworkAgent" name="networkAgent"/>
+        </Constructor>
+      </Constructors>
+      <Fields>
+        <Field name="ERROR_DATACENTER" visibility="private" type="int" isStatic="true" isFinal="true"/>
+        <Field name="admissionagent" visibility="private" type="AdmissionAgent"/>
+        <Field name="networkAgent" visibility="private" type="NetworkAgent"/>
+        <Field name="cloudletlist" visibility="package" type="List&lt;CloudletPower&gt;"/>
+      </Fields>
+      <Methods>
+        <Method name="createCloudletList" visibility="public" returnType="List&lt;CloudletPower&gt;">
+          <Argument type="int" name="userId"/>
+        </Method>
+        <Method name="determineNumberOfRequestsForQueue" visibility="private" returnType="int[]"/>
+        <Method name="getK_Q" visibility="private" returnType="int">
+          <Argument type="double" name="approximationNumPes"/>
+        </Method>
+        <Method name="getK_q" visibility="private" returnType="int">
+          <Argument type="double" name="q"/>
+          <Argument type="int" name="K_Q"/>
+        </Method>
+        <Method name="log2" visibility="private" returnType="double">
+          <Argument type="double" name="x"/>
+        </Method>
+        <Method name="fact" visibility="private" returnType="double">
+          <Argument type="int" name="n"/>
+        </Method>
+        <Method name="determineVmId" visibility="public" returnType="int">
+          <Argument type="CloudletPower" name="cloudlet"/>
+        </Method>
+        <Method name="isHostHasEnoughMips" visibility="private" returnType="int">
+          <Argument type="HostPower" name="host"/>
+          <Argument type="CloudletPower" name="cloudlet"/>
+        </Method>
+        <Method name="getAdmissionagent" visibility="public" returnType="AdmissionAgent"/>
+        <Method name="getNetworkAgent" visibility="public" returnType="NetworkAgent"/>
+        <Method name="main" visibility="public" returnType="void" isStatic="true">
+          <Argument type="String[]" name="args"/>
+        </Method>
+      </Methods>
+    </Class>
+    <Class xPosition="20.0" yPosition="820.0" package="Agents" name="ServerAgent" visibility="public">
+      <Constructors/>
+      <Fields>
+        <Field name="hostMaxAvaiiableMips" visibility="package" type="double"/>
+        <Field name="hostMaxCurrentUtilization" visibility="package" type="double"/>
+        <Field name="hostPreviousUtilizationMips" visibility="package" type="double"/>
+        <Field name="hostPreviousUtilizationCpu" visibility="package" type="double"/>
+      </Fields>
+      <Methods>
+        <Method name="getHostMaxAvaiiableMips" visibility="public" returnType="double"/>
+        <Method name="setHostMaxAvaiiableMips" visibility="public" returnType="void">
+          <Argument type="double" name="hostMaxAvaiiableMips"/>
+        </Method>
+        <Method name="getHostMaxCurrentUtilization" visibility="public" returnType="double"/>
+        <Method name="setHostMaxCurrentUtilization" visibility="public" returnType="void">
+          <Argument type="double" name="hostMaxCurrentUtilization"/>
+        </Method>
+        <Method name="getHostPreviousUtilizationMips" visibility="public" returnType="double"/>
+        <Method name="setHostPreviousUtilizationMips" visibility="public" returnType="void">
+          <Argument type="double" name="hostPreviousUtilizationMips"/>
+        </Method>
+        <Method name="getHostPreviousUtilizationCpu" visibility="public" returnType="double"/>
+        <Method name="setHostPreviousUtilizationCpu" visibility="public" returnType="void">
+          <Argument type="double" name="hostPreviousUtilizationCpu"/>
+        </Method>
+      </Methods>
+    </Class>
+    <Class xPosition="320.0" yPosition="820.0" package="Agents" name="VmAgent" visibility="public">
+      <Constructors>
+        <Constructor name="VmAgent" visibility="public">
+          <Argument type="double" name="vmtotalAllocatedMips"/>
+          <Argument type="double" name="vmtotalRequestedMips"/>
+          <Argument type="double" name="vmmipsUtilization"/>
+        </Constructor>
+      </Constructors>
+      <Fields>
+        <Field name="vmtotalAllocatedMips" visibility="package" type="double"/>
+        <Field name="vmtotalRequestedMips" visibility="package" type="double"/>
+        <Field name="vmmipsUtilization" visibility="package" type="double"/>
+      </Fields>
+      <Methods>
+        <Method name="getVmtotalAllocatedMips" visibility="public" returnType="double"/>
+        <Method name="setVmtotalAllocatedMips" visibility="public" returnType="void">
+          <Argument type="double" name="vmtotalAllocatedMips"/>
+        </Method>
+        <Method name="getVmtotalRequestedMips" visibility="public" returnType="double"/>
+        <Method name="setVmtotalRequestedMips" visibility="public" returnType="void">
+          <Argument type="double" name="vmtotalRequestedMips"/>
+        </Method>
+        <Method name="getVmmipsUtilization" visibility="public" returnType="double"/>
+        <Method name="setVmmipsUtilization" visibility="public" returnType="void">
+          <Argument type="double" name="vmmipsUtilization"/>
+        </Method>
+        <Method name="getMipsOverAllocated" visibility="public" returnType="double"/>
+      </Methods>
+    </Class>
+  </ClassDiagramComponents>
+  <ClassDiagramRelations>
+    <HasRelation name="networkAgent" source="SchedulerAgent" target="NetworkAgent" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <HasRelation name="queuingagent" source="AdmissionAgent" target="QueuingAgent" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <UseRelation source="SchedulerAgent" target="AdmissionAgent" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <HasRelation name="admissionagent" source="SchedulerAgent" target="AdmissionAgent" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <UseRelation source="SchedulerAgent" target="NetworkAgent" sourceCardinality="1..1" targetCardinality="1..1"/>
+  </ClassDiagramRelations>
+</ClassDiagram>

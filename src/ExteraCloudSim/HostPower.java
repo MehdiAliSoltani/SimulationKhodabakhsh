@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import org.cloudbus.cloudsim.Cloudlet;
+import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.HostDynamicWorkload;
 import org.cloudbus.cloudsim.HostStateHistoryEntry;
 import org.cloudbus.cloudsim.Log;
@@ -26,8 +27,8 @@ import simulation.AppConstants;
  *
  * @author Novin Pendar
  */
-public class HostPower extends HostDynamicWorkload {
-//public class HostPower extends Host {
+//public class HostPower extends HostDynamicWorkload {
+public class HostPower extends Host {
 
     private int datacenterID;
     private ServerAgent serveragent;
@@ -122,11 +123,20 @@ public class HostPower extends HostDynamicWorkload {
 
         this.setBandwidthUtilization(getBwUtilization()); // set the bandwidth utilization for this host
         double smallerTime = super.updateVmsProcessing(currentTime);
+//        double smallerTime;
         setPreviousUtilizationMips(getUtilizationMips());
         setUtilizationMips(0);
         double hostTotalRequestedMips = 0;
         List<VmPower> vmlist = this.getVmList();
-
+        if (currentTime > 30){
+        double ut = this.getMaxUtilization();
+        double utt = this.getUtilizationMips();
+        double uttt = this.getUtilizationOfCpuMips();
+        double tt =0;
+        }
+        
+        
+        
         for (VmPower vm : vmlist) {
             getVmScheduler().deallocatePesForVm(vm);
         }
@@ -156,7 +166,7 @@ public class HostPower extends HostDynamicWorkload {
 
             }
 
-            System.out.println("\n\n\n---------------------------------------------");
+            System.out.println("\n---------------------------------------------");
             setUtilizationMips(getUtilizationMips() + totalAllocatedMips);
             hostTotalRequestedMips += totalRequestedMips;
         }

@@ -42,11 +42,7 @@ public class CreateResources {
     private static List<Cloudlet> cloudletList;
 //    private int datacenterID;
 
-    
-
-    
-
-    public DatacenterPower createDatacenter(String name , int datacenterId) {
+    public DatacenterPower createDatacenter(String name, int datacenterId) {
 
         createHostList(AppConstants.NUM_COMPUTE_SERVERS[datacenterId], datacenterId);
         String arch = "x86"; // system architecture
@@ -90,11 +86,7 @@ public class CreateResources {
 //        List<HostPower> hostlist = new ArrayList<HostPower>();
         List<Pe> peList = new ArrayList<Pe>();
         for (int i = 0; i < AppConstants.NUM_PE_per_CS; i++) {
-            peList.add(
-                    new Pe(i,
-                            new PeProvisionerSimple(AppConstants.PE_MIPS)
-                    )
-            );
+            peList.add(new Pe(i, new PeProvisionerSimple(AppConstants.PE_MIPS)));
         }
         for (int hostID = 0; hostID < AppConstants.NUM_COMPUTE_SERVERS[datacenterId]; hostID++) {
             Simulation.COMPUTE_SERVER_LIST[datacenterId].add(new HostPower(datacenterId,
@@ -103,7 +95,7 @@ public class CreateResources {
                     new BwProvisionerSimple(AppConstants.CS_BAND_WIDTH),
                     AppConstants.STORAGE_per_CS,
                     peList,
-//                    new VmSchedulerTimeShared(peList)
+                    //                    new VmSchedulerTimeShared(peList)
                     new VmSchedulerTimeSharedOverSubscription(peList)
             ));
 
@@ -140,8 +132,8 @@ public class CreateResources {
                     size,
                     1,
                     vmm,
-                      new CloudletSchedulerDynamicWorkload(mips, pesNumber) ,0);
-//                    new CloudletSchedulerSpaceShared(), 0);
+                    new CloudletSchedulerDynamicWorkload(mips, pesNumber), 0);
+//                    new CloudletSchedule  rSpaceShared(), 0);
 //                    new CloudletSchedulerTimeShared(), 0);
             Simulation.VMLIST.add(vmpower);
             incrementVmNumber(vmtype, datacenterId);
@@ -149,6 +141,7 @@ public class CreateResources {
         }
 
     }
+
     public void TempcreateVM(int userId, int vmtype, int datacenterId) {
 
         //VM Parameters
@@ -161,22 +154,21 @@ public class CreateResources {
 
         //create VMs
         int vmNum = AppConstants.NUM_of_VM_in_HOST[vmtype] * AppConstants.NUM_COMPUTE_SERVERS[datacenterId];
-            VmPower vmpower = new VmPower(getVmId(),
-                    userId,
-                    mips,
-                    pesNumber,
-                    ram,
-                    bw,
-                    size,
-                    1,
-                    vmm,
-                      new CloudletSchedulerDynamicWorkload(mips, pesNumber) ,0);
+        VmPower vmpower = new VmPower(getVmId(),
+                userId,
+                mips,
+                pesNumber,
+                ram,
+                bw,
+                size,
+                1,
+                vmm,
+                new CloudletSchedulerDynamicWorkload(mips, pesNumber), 0);
 //                    new CloudletSchedulerSpaceShared(), 0);
 //                    new CloudletSchedulerTimeShared(), 0);
-            Simulation.VMLIST.add(vmpower);
-            incrementVmNumber(vmtype, datacenterId);
+        Simulation.VMLIST.add(vmpower);
+        incrementVmNumber(vmtype, datacenterId);
 //            System.out.println(""+Simulation.VM_NUM_TYPE[this.datacenterID][vmtype]);
-        
 
     }
 
@@ -191,7 +183,6 @@ public class CreateResources {
         return broker;
     }
 
-  
     public CloudletPower createCloudlet(int userId, Workload request) {
         int dataStorageDatacenterId = request.getDatastorageDcId();
         int dataStorageId = request.getDataserverNode();
@@ -219,7 +210,7 @@ public class CreateResources {
                 new UtilizationModelNull(),
                 new UtilizationModelNull());
         cloudlet.setUserId(userId);
-        
+
         return cloudlet;
     }
 

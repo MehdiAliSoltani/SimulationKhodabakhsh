@@ -13,7 +13,6 @@ import ExteraCloudSim.DatacenterBrokerPower;
 import ExteraCloudSim.DatacenterPower;
 import ExteraCloudSim.HostPower;
 import Resource.StorageHost;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -21,11 +20,6 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.cloudbus.cloudsim.Cloudlet;
-import org.cloudbus.cloudsim.UtilizationModel;
-import org.cloudbus.cloudsim.UtilizationModelFull;
-import org.cloudbus.cloudsim.UtilizationModelNull;
-import org.cloudbus.cloudsim.UtilizationModelStochastic;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.core.SimEntity;
 import org.cloudbus.cloudsim.core.SimEvent;
@@ -134,7 +128,7 @@ public class CloudManagement extends SimEntity {
             schedule(destination, delay, SCHEDULE_EVERY_HOUR, snode);
             System.out.println(delay);
         }
-
+        
     }
     boolean flag = true;
     static boolean f = true;
@@ -183,8 +177,8 @@ public class CloudManagement extends SimEntity {
                     flag = false;
                     mutex.release();
 
-//                    createVms();
-                    TempcreateVms();
+                    createVms();
+//                    TempcreateVms();
                     CloudSim.resumeSimulation();
 
                 } else {
@@ -206,26 +200,17 @@ public class CloudManagement extends SimEntity {
                                 System.out.println("Cloudlet is failed");
                             }
                         }
-
                         System.out.println("*************************************** " + cloudletlist.size());
-//                        broker.submitCloudletList(cloudletlist);
-
-//                        int vmId = scheduler.determineVmId(cloudletlist.get(1));
-//                        System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^" + cloudletlist.size());
                         CloudSim.resumeSimulation();
-
-                        for (int i = 0; i < AppConstants.NUM_DATACENTER; i++) {
-                            Iterator itt = Simulation.getCOMPUTE_SERVER_LIST(i).iterator();
-                            while (itt.hasNext()) {
-                                HostPower host = (HostPower) itt.next();
-                                host.updateVmsProcessing(starttime);
+                        /*if (starttime % 10 == 0) {
+                            for (int i = 0; i < AppConstants.NUM_DATACENTER; i++) {
+                                Iterator itt = Simulation.getCOMPUTE_SERVER_LIST(i).iterator();
+                                while (itt.hasNext()) {
+                                    HostPower host = (HostPower) itt.next();
+                                    host.updateVmsProcessing(starttime);
+                                }
                             }
-                        }
-
-                        //    ّ
-//                    Simulation.getCOMPUTE_SERVER_LIST(1).get(1).updateVmsProcessing(starttime);
-//                    DatacenterPower p = this.datacenterpower0;
-//                scheduler.createCloudletList(hour, null)
+                        } */
                         //get the requests from the queue
                         //initialize vm list
                         //submit vm list
