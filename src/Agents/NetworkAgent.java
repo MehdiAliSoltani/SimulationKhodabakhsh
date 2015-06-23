@@ -5,7 +5,9 @@
  */
 package Agents;
 
+import ExteraCloudSim.CloudletPower;
 import ExteraCloudSim.HostPower;
+import ExteraCloudSim.VmPower;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -22,7 +24,8 @@ import simulation.Simulation;
 public class NetworkAgent {
 
     private static Map<Keys, TableValues[]> initWTable = new LinkedHashMap<Keys, TableValues[]>();
-    private static Map<Keys, TableValues[]> WTable;
+    private static Map<Keys, TableValues[]> WTable = new LinkedHashMap<Keys, TableValues[]>();
+    ;
     int dataStorage;
 
     public NetworkAgent() {
@@ -36,14 +39,14 @@ public class NetworkAgent {
         double default_alpha_in_datacenter = 1;
         double default_alpha_between_datacenter;
 //        List<HostPower> hostlist = Simulation.getCOMPUTE_SERVER_LIST();
- // this part temporarily added       
-        List<HostPower> hostlist = new  ArrayList<HostPower>();
+        // this part temporarily added       
+        List<HostPower> hostlist = new ArrayList<HostPower>();
         for (int i = 0; i < AppConstants.NUM_DATACENTER; i++) {
             for (HostPower h : Simulation.getCOMPUTE_SERVER_LIST(i)) {
                 hostlist.add(h);
             }
         }
-        
+
         tablevalue = new TableValues[hostlist.size()];
         for (int datacenterId = 0; datacenterId < AppConstants.NUM_DATACENTER; datacenterId++) {
             for (int dataStorageId = 0; dataStorageId < AppConstants.NUM_STORAGE_SERVERS[datacenterId]; dataStorageId++) {
@@ -55,7 +58,7 @@ public class NetworkAgent {
 
                 for (HostPower host : hostlist) {
                     int dcId = host.getDatacenterID();
-                    System.out.println(dcId);
+//                    System.out.println(dcId);
                     switch (datacenterId) {
                         case 0:
                             if (datacenterId == dcId) {
@@ -93,6 +96,7 @@ public class NetworkAgent {
                 System.arraycopy(tablevalue, 0, tv, 0, tablevalue.length);
                 Keys key = new Keys(datacenterId, dataStorageId);
                 initWTable.put(key, tv);
+                WTable.put(key, tv);
 //                for (int i = 0; i < tablevalue.length; i++) {
 //                    tablevalue[i] = null;
 //                }
@@ -117,6 +121,75 @@ public class NetworkAgent {
 
          System.out.println("");
          */
+//        WTable = initWTable;
+    }
+
+    public void WTable(double[] parameters) {
+        TableValues[] tablevalue;
+        int tableIndex;
+        double default_alpha_in_datacenter = 1;
+        double default_alpha_between_datacenter;
+//        List<HostPower> hostlist = Simulation.getCOMPUTE_SERVER_LIST();
+        // this part temporarily added       
+        List<HostPower> hostlist = new ArrayList<HostPower>();
+        for (int i = 0; i < AppConstants.NUM_DATACENTER; i++) {
+            for (HostPower h : Simulation.getCOMPUTE_SERVER_LIST(i)) {
+                hostlist.add(h);
+            }
+        }
+
+        tablevalue = new TableValues[hostlist.size()];
+        for (int datacenterId = 0; datacenterId < AppConstants.NUM_DATACENTER; datacenterId++) {
+            for (int dataStorageId = 0; dataStorageId < AppConstants.NUM_STORAGE_SERVERS[datacenterId]; dataStorageId++) {
+                tableIndex = 0;
+                for (int i = 0; i < tablevalue.length; i++) {
+//                    tablevalue[i] =null;
+                    tablevalue[i] = new TableValues();
+                }
+
+                for (HostPower host : hostlist) {
+                    int dcId = host.getDatacenterID();
+//                    System.out.println(dcId);
+                    switch (datacenterId) {
+                        case 0:
+                            if (datacenterId == dcId) {
+                                default_alpha_in_datacenter = getRandomTrafficCoeff(
+                                        parameters[0],
+                                        parameters[1]);
+                            } else {
+                                default_alpha_in_datacenter = getRandomTrafficCoeff(
+                                        parameters[2],
+                                        parameters[3]);
+
+                            }
+                            break;
+                        case 1:
+                            if (datacenterId == dcId) {
+                                default_alpha_in_datacenter = getRandomTrafficCoeff(
+                                        parameters[4],
+                                        parameters[5]);
+                            } else {
+                                default_alpha_in_datacenter = getRandomTrafficCoeff(
+                                        parameters[6],
+                                        parameters[7]);
+
+                            }
+                            break;
+
+                    }
+
+                    tablevalue[tableIndex].setDatacenterId(dcId);
+                    tablevalue[tableIndex].setComputehostId(host.getId());
+                    tablevalue[tableIndex].setAlpha(default_alpha_in_datacenter);
+                    tableIndex++;
+                }
+                TableValues[] tv = new TableValues[tablevalue.length];
+                System.arraycopy(tablevalue, 0, tv, 0, tablevalue.length);
+                Keys key = new Keys(datacenterId, dataStorageId);
+                initWTable.put(key, tv);
+            }
+
+        }
         WTable = initWTable;
     }
 
@@ -152,14 +225,109 @@ public class NetworkAgent {
 
                 }
                 WTable.put(key, tableValues);
+                System.out.println("");
             }
         }
 
     }
+
+    /**
+     * *
+     *
+     */
+//    static List<Double> listt = new ArrayList<Double>();
+//    static int co = 0;
+    public void setWTable() {
+//        co++;
+        for (int dId = 0; dId < AppConstants.NUM_DATACENTER; dId++) {
+
+            for (HostPower hostpower : Simulation.getCOMPUTE_SERVER_LIST(dId)) {
+                boolean change = true;
+//                double inHouseBandwithUilized = 0;
+//                double outHouseBandwithUilized = 0;
+                double inHouseBandwithUilized = hostpower.getInHouseTotalBandwidthUsed();
+                double outHouseBandwithUilized = hostpower.getOutHouseTotalBandwidthUsed();
+                List<VmPower> vmlist = hostpower.getVmList();
+                for (VmPower vm : vmlist) {
+                    List<CloudletPower> cloudletlist = vm.getVmCloudletList();
+                    for (CloudletPower cloudlet : cloudletlist) {
+                        if (!cloudlet.isIoCheck()) {
+                            long totalSizeofFiles = 0;
+                            for (int j = 0; j < cloudlet.getSizeofFiles().length; j++) {
+                                totalSizeofFiles += cloudlet.getSizeofFiles()[j];
+                            }
+                            if (cloudlet.isInSource()) {
+                                inHouseBandwithUilized += totalSizeofFiles;
+                            } else {
+                                outHouseBandwithUilized += totalSizeofFiles;
+                            }
+                        }
+                        cloudlet.setIoCheck(true);
+                    }
+//                    System.out.println("On Vm # "+ vm.getId()+ " number of cloudlet "+ cloudletlist.size()+ "   "+ cloudletlist);
+                }
+                hostpower.setInHouseTotalBandwidthUsed(inHouseBandwithUilized);
+                hostpower.setOutHouseTotalBandwidthUsed(outHouseBandwithUilized);
+//                System.out.println("///////////////////////////////////");
+//                System.out.println("hostpower.getInHouseTotalBandwidthUsed() "+ hostpower.getInHouseTotalBandwidthUsed() );
+//                System.out.println("///////////////////////////////////");
+            }
+        }
+        //////////////////////////////////////////
+        for (int datacenterId = 0; datacenterId < AppConstants.NUM_DATACENTER; datacenterId++) {
+            for (int dataStorageId = 0; dataStorageId < AppConstants.NUM_STORAGE_SERVERS[datacenterId]; dataStorageId++) {
+                Keys key = new Keys(datacenterId, dataStorageId);
+                TableValues[] tvalue = initWTable.get(key);
+                TableValues[] tableValues = null;
+                tableValues = new TableValues[tvalue.length];
+                for (int i = 0; i < tvalue.length; i++) {
+                    int csId = tvalue[i].getComputehostId();
+                    int dcId = tvalue[i].getDatacenterId();
+                    for (int dId = 0; dId < AppConstants.NUM_DATACENTER; dId++) {
+                        double bandwithUilized = 0;
+                        for (HostPower hostpower : Simulation.getCOMPUTE_SERVER_LIST(dId)) {
+                            if (hostpower.getDatacenterID() == dcId && hostpower.getId() == csId) {
+
+                                double bwutilization = (hostpower.getInHouseTotalBandwidthUsed()
+                                        + hostpower.getOutHouseTotalBandwidthUsed())
+                                        / (double) AppConstants.SHARE_OF_BANDWIDTH_IN_DATACENTER_0;
+//                                listt.add(bwutilization);
+//                                if (co > 100)
+//                                    System.out.println("");
+//                                        hostpower.getBwUtilization();
+//                                double alp= tvalue[i].getAlpha();
+                                double alpha = tvalue[i].getAlpha() + AppConstants.COEF_NETWORK_TRAFFIC
+                                        * tvalue[i].getAlpha() * bwutilization;
+//                                listt.add(alpha);
+//
+//                                if (co > 200) {
+//                                    System.out.println("lll");
+//                                }
+                                if (alpha > AppConstants.MAX_ALPHA) {
+                                    alpha = AppConstants.MAX_ALPHA;
+                                } else if (alpha < AppConstants.MIN_ALPHA) {
+                                    alpha = AppConstants.MIN_ALPHA;
+                                }
+//                            tableValues = new TableValues[tvalue.length];
+                                tableValues[i] = new TableValues();
+                                tableValues[i].setAlpha(alpha);
+                                tableValues[i].setComputehostId(csId);
+                                tableValues[i].setDatacenterId(dcId);
+                                break;
+                            }
+
+                        }
+                    }
+
+                }
+                WTable.put(key, tableValues);
+            }
+        }
+    }
+
     /*
      set elements in WTable
      */
-
     public void setWTableElement(int dataStorageDcId, int dataStorageId, int cSDcId, int hostId, double alpha) {
         Keys key = new Keys(dataStorageDcId, dataStorageId);
         TableValues[] tablevalue = WTable.get(key);

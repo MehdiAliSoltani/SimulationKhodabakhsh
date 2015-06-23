@@ -8,6 +8,7 @@ package ExteraCloudSim;
 import Test.CloudSimExample1;
 import java.util.List;
 import java.util.Map;
+import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.Datacenter;
 import org.cloudbus.cloudsim.DatacenterCharacteristics;
 import org.cloudbus.cloudsim.Host;
@@ -22,6 +23,7 @@ import org.cloudbus.cloudsim.core.predicates.PredicateType;
 import org.cloudbus.cloudsim.power.PowerDatacenter;
 import org.cloudbus.cloudsim.power.PowerHost;
 import simulation.AppConstants;
+import static simulation.Simulation.LOGRECORD;
 
 /**
  *
@@ -30,6 +32,7 @@ import simulation.AppConstants;
 public class DatacenterPower extends Datacenter {
 
     private int datacenterID;
+
     public DatacenterPower(String name, DatacenterCharacteristics characteristics, VmAllocationPolicy vmAllocationPolicy, List<Storage> storageList, double schedulingInterval) throws Exception {
         super(name, characteristics, vmAllocationPolicy, storageList, schedulingInterval);
     }
@@ -178,7 +181,75 @@ public class DatacenterPower extends Datacenter {
                 break;
         }
     }
-       @Override
+
+    /**
+     * Processes a Cloudlet based on the event type.
+     *
+     * @param ev a Sim_event object
+     * @param type event type
+     * @pre ev != null
+     * @pre type > 0
+     * @post $none
+     */
+    @Override
+    protected void processCloudlet(SimEvent ev, int type) {
+        int cloudletId = 0;
+        int userId = 0;
+        int vmId = 0;
+        CloudletPower cloudlet = (CloudletPower) ev.getData();
+
+        try { // if the sender using cloudletXXX() methods
+            int data[] = (int[]) ev.getData();
+            cloudletId = data[0];
+            userId = data[1];
+            vmId = data[2];
+        } // if the sender using normal send() methods
+        catch (ClassCastException c) {
+            try {
+                Cloudlet cl = (Cloudlet) ev.getData();
+ 
+                cloudletId = cl.getCloudletId();
+                userId = cl.getUserId();
+                vmId = cl.getVmId();
+            } catch (Exception e) {
+                Log.printLine(super.getName() + ": Error in processing Cloudlet");
+                Log.printLine(e.getMessage());
+                return;
+            }
+        } catch (Exception e) {
+            Log.printLine(super.getName() + ": Error in processing a Cloudlet.");
+            Log.printLine(e.getMessage());
+            return;
+        }
+
+        // begins executing ....
+        switch (type) {
+            case CloudSimTags.CLOUDLET_CANCEL:
+                processCloudletCancel(cloudletId, userId, vmId);
+                break;
+
+            case CloudSimTags.CLOUDLET_PAUSE:
+                processCloudletPause(cloudletId, userId, vmId, false, cloudlet);
+                break;
+
+            case CloudSimTags.CLOUDLET_PAUSE_ACK:
+                processCloudletPause(cloudletId, userId, vmId, true);
+                break;
+
+            case CloudSimTags.CLOUDLET_RESUME:
+                processCloudletResume(cloudletId, userId, vmId, false,  cloudlet);
+                break;
+
+            case CloudSimTags.CLOUDLET_RESUME_ACK:
+                processCloudletResume(cloudletId, userId, vmId, true);
+                break;
+            default:
+                break;
+        }
+
+    }
+
+    @Override
     protected void processVmCreate(SimEvent ev, boolean ack) {
         Vm vm = (Vm) ev.getData();
 //        Host h = CloudSimExample1.hostList.get(2);
@@ -212,146 +283,223 @@ public class DatacenterPower extends Datacenter {
         }
 
     }
-    @Override
-    	protected void updateCloudletProcessing() {
-		// if some time passed since last processing
-		// R: for term is to allow loop at simulation start. Otherwise, one initial
-		// simulation step is skipped and schedulers are not properly initialized
-//            schedule(getId(), 2, CloudSimTags.VM_DATACENTER_EVENT);
-		if (CloudSim.clock() < 0.111 || CloudSim.clock() > getLastProcessTime() + CloudSim.getMinTimeBetweenEvents()) {
-                    
-			List<? extends Host> list = getVmAllocationPolicy().getHostList();
-			double smallerTime = Double.MAX_VALUE;
-			// for each host...
-			for (int i = 0; i < list.size(); i++) {
-				Host host = list.get(i);
-				// inform VMs to update processing
-				double time = host.updateVmsProcessing(CloudSim.clock());
-				// what time do we expect that the next cloudlet will finish?
-				if (time < smallerTime) {
-					smallerTime = time;
-				}
-			}
-			// gurantees a minimal interval before scheduling the event
-			if (smallerTime < CloudSim.clock() + CloudSim.getMinTimeBetweenEvents() + 0.01) {
-				smallerTime = CloudSim.clock() + CloudSim.getMinTimeBetweenEvents() + 0.01;
-			}
-			if (smallerTime != Double.MAX_VALUE) {
-				schedule(getId(), (smallerTime - CloudSim.clock()), CloudSimTags.VM_DATACENTER_EVENT);
-			}
-			setLastProcessTime(CloudSim.clock());
-		}
-	}
 
-/*
-    protected void processVmCreateInHost(SimEvent ev, boolean ack) {
-//        SdVm vm = (SdVm) ev.getData();
-        Vm vm = (Vm) ev.getData();
-        boolean result;
-        double currenttime = CloudSim.clock();
-        HostPower hostpower = null;// = doShrinking(currenttime, vm);
-        if (hostpower == null) {
-            result = false;
-        } else {
-            result = getVmAllocationPolicy().allocateHostForVm(vm, hostpower);
+    /**
+     * Processes a Cloudlet resume request.
+     *
+     * @param cloudletId resuming cloudlet ID
+     * @param userId ID of the cloudlet's owner
+     * @param ack $true if an ack is requested after operation
+     * @param vmId the vm id
+     * @pre $none
+     * @post $none
+     */
+//    @Override
+    protected void processCloudletResume(int cloudletId, int userId, int vmId, boolean ack, CloudletPower cloudlet) {
+        double eventTime = getVmAllocationPolicy().getHost(vmId, userId).getVm(vmId, userId)
+                .getCloudletScheduler().cloudletResume(cloudletId);
+        double waitingTime= CloudSim.clock() - cloudlet.getBlockedTime();
+        cloudlet.addWaitingTime(waitingTime);
+        cloudlet.setRestartTime(CloudSim.clock());
+        LOGRECORD.get(cloudlet.getCloudletId()).setStatus(cloudlet.getStatus());
+        boolean status = false;
+        if (eventTime > 0.0) { // if this cloudlet is in the exec queue
+            status = true;
+            if (eventTime > CloudSim.clock()) {
+                schedule(getId(), eventTime, CloudSimTags.VM_DATACENTER_EVENT);
+            }
         }
 
         if (ack) {
             int[] data = new int[3];
             data[0] = getId();
-            data[1] = vm.getId();
-
-            if (result) {
+            data[1] = cloudletId;
+            if (status) {
                 data[2] = CloudSimTags.TRUE;
             } else {
                 data[2] = CloudSimTags.FALSE;
             }
-
-            sendNow(vm.getUserId(), CloudSimTags.VM_CREATE_ACK, data);
+            sendNow(userId, CloudSimTags.CLOUDLET_RESUME_ACK, data);
         }
-
-        if (result) {
-            double amount = 0.0;
-            if (getDebts().containsKey(vm.getUserId())) {
-                amount = getDebts().get(vm.getUserId());
-            }
-            amount += getCharacteristics().getCostPerMem() * vm.getRam();
-            amount += getCharacteristics().getCostPerStorage() * vm.getSize();
-
-            getDebts().put(vm.getUserId(), amount);
-
-            getVmList().add(vm);
-
-            vm.updateVmProcessing(CloudSim.clock(), getVmAllocationPolicy().getHost(vm).getVmScheduler().getAllocatedMipsForVm(vm));
-        }
-
     }
+
+    /**
+     * Processes a Cloudlet pause request.
+     *
+     * @param cloudletId resuming cloudlet ID
+     * @param userId ID of the cloudlet's owner
+     * @param ack $true if an ack is requested after operation
+     * @param vmId the vm id
+     * @pre $none
+     * @post $none
+     */
+//    @Override
+    protected void processCloudletPause(int cloudletId, int userId, int vmId, boolean ack,  CloudletPower cloudlet) {
+        boolean status = getVmAllocationPolicy().getHost(vmId, userId).getVm(vmId, userId)
+                .getCloudletScheduler().cloudletPause(cloudletId);
+        
+        cloudlet.setBlockedTime(CloudSim.clock());
+        cloudlet.addTotalCpuConsume(CloudSim.clock() - cloudlet.getRestartTime());
+        LOGRECORD.get(cloudlet.getCloudletId()).setStatus(cloudlet.getStatus());
+//        cloudlet.addTotalCpuConsume(CloudSim.clock() - cloudlet.getStartTime());
+//        CloudletPower cloudlet = getVmAllocationPolicy().getHost(vmId, userId).getVm(vmId, userId).getCloudletScheduler();
+     /*   System.out.println("Cloudlet #" + cloudletId + " paused at " + CloudSim.clock() + " status "
+                + getVmAllocationPolicy().getHost(vmId, userId).getVm(vmId, userId)
+                .getCloudletScheduler().getCloudletStatus(cloudletId));
 */
- 
+        if (ack) {
+            int[] data = new int[3];
+            data[0] = getId();
+            data[1] = cloudletId;
+            if (status) {
+                data[2] = CloudSimTags.TRUE;
+            } else {
+                data[2] = CloudSimTags.FALSE;
+            }
+            sendNow(userId, CloudSimTags.CLOUDLET_PAUSE_ACK, data);
+        }
+    }
+
     /*
-    	@Override
-	protected void updateCloudletProcessing() {
-		if (getCloudletSubmitted() == -1 || getCloudletSubmitted() == CloudSim.clock()) {
-			CloudSim.cancelAll(getId(), new PredicateType(CloudSimTags.VM_DATACENTER_EVENT));
-			schedule(getId(), getSchedulingInterval(), CloudSimTags.VM_DATACENTER_EVENT);
-			return;
-		}
-		double currentTime = CloudSim.clock();
+     @Override
+     protected void updateCloudletProcessing() {
+     // if some time passed since last processing
+     // R: for term is to allow loop at simulation start. Otherwise, one initial
+     // simulation step is skipped and schedulers are not properly initialized
+     //            schedule(getId(), 2, CloudSimTags.VM_DATACENTER_EVENT);
+     if (CloudSim.clock() < 0.111 || CloudSim.clock() > getLastProcessTime() + CloudSim.getMinTimeBetweenEvents()) {
+                    
+     List<? extends Host> list = getVmAllocationPolicy().getHostList();
+     double smallerTime = Double.MAX_VALUE;
+     // for each host...
+     for (int i = 0; i < list.size(); i++) {
+     Host host = list.get(i);
+     // inform VMs to update processing
+     double time = host.updateVmsProcessing(CloudSim.clock());
+     // what time do we expect that the next cloudlet will finish?
+     if (time < smallerTime) {
+     smallerTime = time;
+     }
+     }
+     // gurantees a minimal interval before scheduling the event
+     if (smallerTime < CloudSim.clock() + CloudSim.getMinTimeBetweenEvents() + 0.01) {
+     smallerTime = CloudSim.clock() + CloudSim.getMinTimeBetweenEvents() + 0.01;
+     }
+     if (smallerTime != Double.MAX_VALUE) {
+     schedule(getId(), (smallerTime - CloudSim.clock()), CloudSimTags.VM_DATACENTER_EVENT);
+     }
+     setLastProcessTime(CloudSim.clock());
+     }
+     }
+     /*
 
-		// if some time passed since last processing
-		if (currentTime > getLastProcessTime()) {
-			System.out.print(currentTime + " ");
+     /*
+     protected void processVmCreateInHost(SimEvent ev, boolean ack) {
+     //        SdVm vm = (SdVm) ev.getData();
+     Vm vm = (Vm) ev.getData();
+     boolean result;
+     double currenttime = CloudSim.clock();
+     HostPower hostpower = null;// = doShrinking(currenttime, vm);
+     if (hostpower == null) {
+     result = false;
+     } else {
+     result = getVmAllocationPolicy().allocateHostForVm(vm, hostpower);
+     }
 
-			double minTime = updateCloudetProcessingWithoutSchedulingFutureEventsForce();
+     if (ack) {
+     int[] data = new int[3];
+     data[0] = getId();
+     data[1] = vm.getId();
 
-			if (!isDisableMigrations()) {
-				List<Map<String, Object>> migrationMap = getVmAllocationPolicy().optimizeAllocation(
-						getVmList());
+     if (result) {
+     data[2] = CloudSimTags.TRUE;
+     } else {
+     data[2] = CloudSimTags.FALSE;
+     }
 
-				if (migrationMap != null) {
-					for (Map<String, Object> migrate : migrationMap) {
-						Vm vm = (Vm) migrate.get("vm");
-						PowerHost targetHost = (PowerHost) migrate.get("host");
-						PowerHost oldHost = (PowerHost) vm.getHost();
+     sendNow(vm.getUserId(), CloudSimTags.VM_CREATE_ACK, data);
+     }
 
-						if (oldHost == null) {
-							Log.formatLine(
-									"%.2f: Migration of VM #%d to Host #%d is started",
-									currentTime,
-									vm.getId(),
-									targetHost.getId());
-						} else {
-							Log.formatLine(
-									"%.2f: Migration of VM #%d from Host #%d to Host #%d is started",
-									currentTime,
-									vm.getId(),
-									oldHost.getId(),
-									targetHost.getId());
-						}
+     if (result) {
+     double amount = 0.0;
+     if (getDebts().containsKey(vm.getUserId())) {
+     amount = getDebts().get(vm.getUserId());
+     }
+     amount += getCharacteristics().getCostPerMem() * vm.getRam();
+     amount += getCharacteristics().getCostPerStorage() * vm.getSize();
 
-						targetHost.addMigratingInVm(vm);
-						incrementMigrationCount();
+     getDebts().put(vm.getUserId(), amount);
 
-						/** VM migration delay = RAM / bandwidth **/
-						// we use BW / 2 to model BW available for migration purposes, the other
-						// half of BW is for VM communication
-						// around 16 seconds for 1024 MB using 1 Gbit/s network
+     getVmList().add(vm);
+
+     vm.updateVmProcessing(CloudSim.clock(), getVmAllocationPolicy().getHost(vm).getVmScheduler().getAllocatedMipsForVm(vm));
+     }
+
+     }
+     */
+    /*
+     @Override
+     protected void updateCloudletProcessing() {
+     if (getCloudletSubmitted() == -1 || getCloudletSubmitted() == CloudSim.clock()) {
+     CloudSim.cancelAll(getId(), new PredicateType(CloudSimTags.VM_DATACENTER_EVENT));
+     schedule(getId(), getSchedulingInterval(), CloudSimTags.VM_DATACENTER_EVENT);
+     return;
+     }
+     double currentTime = CloudSim.clock();
+
+     // if some time passed since last processing
+     if (currentTime > getLastProcessTime()) {
+     System.out.print(currentTime + " ");
+
+     double minTime = updateCloudetProcessingWithoutSchedulingFutureEventsForce();
+
+     if (!isDisableMigrations()) {
+     List<Map<String, Object>> migrationMap = getVmAllocationPolicy().optimizeAllocation(
+     getVmList());
+
+     if (migrationMap != null) {
+     for (Map<String, Object> migrate : migrationMap) {
+     Vm vm = (Vm) migrate.get("vm");
+     PowerHost targetHost = (PowerHost) migrate.get("host");
+     PowerHost oldHost = (PowerHost) vm.getHost();
+
+     if (oldHost == null) {
+     Log.formatLine(
+     "%.2f: Migration of VM #%d to Host #%d is started",
+     currentTime,
+     vm.getId(),
+     targetHost.getId());
+     } else {
+     Log.formatLine(
+     "%.2f: Migration of VM #%d from Host #%d to Host #%d is started",
+     currentTime,
+     vm.getId(),
+     oldHost.getId(),
+     targetHost.getId());
+     }
+
+     targetHost.addMigratingInVm(vm);
+     incrementMigrationCount();
+
+     /** VM migration delay = RAM / bandwidth **/
+    // we use BW / 2 to model BW available for migration purposes, the other
+    // half of BW is for VM communication
+    // around 16 seconds for 1024 MB using 1 Gbit/s network
 /*						send(getId(),vm.getRam() / ((double) targetHost.getBw() / (2 * 8000)),
-								CloudSimTags.VM_MIGRATE,
-								migrate);
-					}
-				}
-			}
+     CloudSimTags.VM_MIGRATE,
+     migrate);
+     }
+     }
+     }
 
-			// schedules an event to the next time
-			if (minTime != Double.MAX_VALUE) {
-				CloudSim.cancelAll(getId(), new PredicateType(CloudSimTags.VM_DATACENTER_EVENT));
-				send(getId(), getSchedulingInterval(), CloudSimTags.VM_DATACENTER_EVENT);
-			}
+     // schedules an event to the next time
+     if (minTime != Double.MAX_VALUE) {
+     CloudSim.cancelAll(getId(), new PredicateType(CloudSimTags.VM_DATACENTER_EVENT));
+     send(getId(), getSchedulingInterval(), CloudSimTags.VM_DATACENTER_EVENT);
+     }
 
-			setLastProcessTime(currentTime);
-		}
-	}
-*/
-
+     setLastProcessTime(currentTime);
+     }
+     }
+     */
 }

@@ -47,6 +47,7 @@ public class AdmissionAgent {
     public void readWorkload() {
         ReadWritetoFile r = new ReadWritetoFile();
         String filename = this.directory + Simulation.SENARIO + "\\" + this.hour + ".bin";
+        System.out.println("Start loading workload for scenario #"+ Simulation.SENARIO);
         this.list_of_list_of_workload = r.readWorkloadFiles(filename);
     }
     /*

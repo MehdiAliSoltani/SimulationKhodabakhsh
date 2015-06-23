@@ -64,6 +64,7 @@ public class UtilizationModelRealBw implements UtilizationModel {
      * (non-Javadoc)
      * @see cloudsim.power.UtilizationModel#getUtilization(double)
      */
+/*
     @Override
     public double getUtilization(double time) {
         for (HostPower host : Simulation.COMPUTE_SERVER_LIST) {
@@ -164,6 +165,11 @@ public class UtilizationModelRealBw implements UtilizationModel {
      */
     public Random getRandomGenerator() {
         return randomGenerator;
+    }
+
+    @Override
+    public double getUtilization(double time) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

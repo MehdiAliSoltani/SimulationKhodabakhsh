@@ -5,20 +5,19 @@
  */
 package simulation;
 
-import Agents.AdmissionAgent;
-import Agents.NetworkAgent;
-import Agents.QueuingAgent;
 import CloudManagement.CloudManagement;
-import ExteraCloudSim.DatacenterBrokerPower;
-import ExteraCloudSim.DatacenterPower;
 import ExteraCloudSim.HostPower;
 import ExteraCloudSim.VmPower;
+import Log.LogRecord;
+import Log.ReadWriteFile;
 import Resource.StorageHost;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.core.CloudSim;
 
 /**
@@ -26,12 +25,21 @@ import org.cloudbus.cloudsim.core.CloudSim;
  * @author Novin Pendar
  */
 public class Simulation {
+    
+    public static int SENARIO = 4;
+    public static int POLICY = AppConstants.SSLNT;
+//    public static int POLICY =AppConstants.RANDOMSELECTION;
+//    public static int POLICY = AppConstants.RANDOMSELECTIONWITHRESOURCECONSIDERING;
 
-    public static int SENARIO = 1;
+    public static Map<Integer, LogRecord> LOGRECORD = new HashMap<Integer, LogRecord>();
+    public static long[] ToatalBandwidthUsedDatacenter = new long[AppConstants.NUM_DATACENTER]; // for total system in second
+    public static long TotalBandwidthUsedBetweenDatacenter;
+    
+            
     public static int NO_VM = 0;
     public static int Vm_NO = 0;
-//    public static List<HostPower> COMPUTE_SERVER_LIST = new ArrayList<HostPower>();  // list of hosts
     public static List<HostPower>[] COMPUTE_SERVER_LIST = new List[AppConstants.NUM_DATACENTER];// = new ArrayList<HostPower>();  // list of hosts
+    
     public static StorageHost[] STORAGE_SERVER_LIST;
 
     public static List<VmPower> VMLIST = new ArrayList<VmPower>();
@@ -50,56 +58,48 @@ public class Simulation {
         // Initialize the CloudSim library
         CloudSim.init(num_user, calendar, trace_flag);
         System.out.println("Clock:::" + CloudSim.clock());
-//            createCloud();
 
         CloudManagement c = new CloudManagement("cloudcontroller");
 
-        // Initilize Agents(AdmissionAgent, QueuingAgent)
-//        AdmissionAgent admissionagent = new AdmissionAgent(DIRECTORY);
-//        admissionagent.setHour(0);
-//        
-//        admissionagent.createQueue();
-//        
-// initial VM list 
-//        for (int i = 0; i < AppConstants.VM_TYPE.length; i++) {
-//            VMLIST =  new ArrayList<VmPower>();
-//        }
-//        HOSTLIST = new List[AppConstants.NUM_DATACENTER];  // list of hosts
-//        VMLIST = new List[AppConstants.NUM_DATACENTER];
-        /*           int numberofStorgehosts = 0;
-         for (int i = 0; i < AppConstants.NUM_DATACENTER; i++) {
-         //            HOSTLIST[i] = new ArrayList<HostPower>();
-         //            VMLIST[i] = new ArrayList<VmPower>();
-         Arrays.fill(VM_NUM_TYPE[i], 0);
-         numberofStorgehosts =+ AppConstants.NUM_STORAGE_SERVERS[i];
- 
-         }
-         //create storage servers
-         STORAGE_SERVER_LIST = new StorageHost[numberofStorgehosts];
-
-         CreateResources resource0 = new CreateResources(0);
-         CreateResources resource1 = new CreateResources(1);
-         //        resource0.getWorkload(0);
-        
-         DatacenterPower datacenterpower0 = resource0.createDatacenter("Datacenter_0");
-         DatacenterPower datacenterpower1 = resource1.createDatacenter("Datacenter_1");
-         NetworkAgent na = new NetworkAgent();
-         DatacenterBrokerPower broker = resource0.createBroker();
-         for (int i = 0; i < AppConstants.VM_TYPE.length; i++) {
-         resource0.createVM(broker.getId(), AppConstants.VM_TYPE[i]);
-         }
-         for (int i = 0; i < AppConstants.VM_TYPE.length; i++) {
-         resource1.createVM(broker.getId(), AppConstants.VM_TYPE[i]);
-         }
-
-         //        DatacenterBrokerPower broker1 = resource1.createBroker();
-         //        System.out.println(""+broker.getId());
-         broker.submitVmList(VMLIST);
-         //        broker1.submitVmList(VMLIST[1]);
-         */
+        CloudSim.terminateSimulation(AppConstants.SIMULATION_LENGTH);
         CloudSim.startSimulation();
 
         CloudSim.stopSimulation();
+        ReadWriteFile writeLogtoExcel = new ReadWriteFile();
+        String outputFileName = AppConstants.OUTPUT_DIRECTORY + AppConstants.POLICY_NAME[POLICY] + ".xls";
+        writeLogtoExcel.writeToExcel(LOGRECORD, outputFileName);
+        int numberCloudlet = 0;
+        long totalSizeofFiles = 0;
+        double totalCpuUsage = 0;
+        double totalWaitingTime = 0;
+        double totalCompelitionTime = 0;
+        int success = 0, unsuccess = 0, numberInsourced = 0;
+        for (Map.Entry<Integer, LogRecord> map : LOGRECORD.entrySet()) {
+            numberCloudlet++;
+            totalSizeofFiles += map.getValue().getIoFileSize();
+            totalCpuUsage += map.getValue().getCpuUsageTime();
+            totalWaitingTime += map.getValue().getWaitingTime();
+            totalCompelitionTime += map.getValue().getCompelitionTime();
+            if (!map.getValue().isOutsourced()) {
+                numberInsourced++;
+            }
+            if (map.getValue().getStatus() == Cloudlet.SUCCESS) {
+                success++;
+            } else {
+                unsuccess++;
+            }
+        }
+
+        String summeryFileName = AppConstants.OUTPUT_DIRECTORY + "Summery_" + AppConstants.POLICY_NAME[POLICY] + ".xls";
+        writeLogtoExcel.writeSummeryToExcel(numberCloudlet,
+                totalSizeofFiles,
+                totalCpuUsage,
+                totalWaitingTime,
+                totalCompelitionTime,
+                numberInsourced,
+                success,
+                unsuccess,
+                summeryFileName);
 
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 4; j++) {
@@ -109,6 +109,14 @@ public class Simulation {
         }
         System.out.println("");
         System.out.println("Number of created VM = " + NO_VM);
+
+        for (int i = 0; i < CloudManagement.NumberofServer; i++) {
+            for (int j = 0; j < CloudManagement.Utilization[i].size(); j++) {
+                System.out.print(CloudManagement.Utilization[i].get(j)+ " ");
+            }
+            System.out.println("");
+        }
+    
     }
 
     public static List<HostPower> getCOMPUTE_SERVER_LIST(int datacenterId) {
@@ -137,38 +145,39 @@ public class Simulation {
         }
         return null;
     }
-    /*
-     public static void createCloud(){
-     int numberofStorgehosts = 0;
-     for (int i = 0; i < AppConstants.NUM_DATACENTER; i++) {
-     //            HOSTLIST[i] = new ArrayList<HostPower>();
-     //            VMLIST[i] = new ArrayList<VmPower>();
-     Arrays.fill(VM_NUM_TYPE[i], 0);
-     numberofStorgehosts =+ AppConstants.NUM_STORAGE_SERVERS[i];
- 
-     }
-     //create storage servers
-     STORAGE_SERVER_LIST = new StorageHost[numberofStorgehosts];
 
-     CreateResources resource0 = new CreateResources(0);
-     CreateResources resource1 = new CreateResources(1);
-     //        resource0.getWorkload(0);
-        
-     DatacenterPower datacenterpower0 = resource0.createDatacenter("Datacenter_0");
-     DatacenterPower datacenterpower1 = resource1.createDatacenter("Datacenter_1");
-     NetworkAgent na = new NetworkAgent();
-     DatacenterBrokerPower broker = resource0.createBroker();
-     for (int i = 0; i < AppConstants.VM_TYPE.length; i++) {
-     resource0.createVM(broker.getId(), AppConstants.VM_TYPE[i]);
-     }
-     for (int i = 0; i < AppConstants.VM_TYPE.length; i++) {
-     resource1.createVM(broker.getId(), AppConstants.VM_TYPE[i]);
-     }
+    public static long getToatalBandwidthUsedDatacenter(int datacenterId) {
+        return ToatalBandwidthUsedDatacenter[datacenterId];
+    }
 
-     //        DatacenterBrokerPower broker1 = resource1.createBroker();
-     //        System.out.println(""+broker.getId());
-     broker.submitVmList(VMLIST);
+    public static void setToatalBandwidthUsedDatacenter(long[] ToatalBandwidthUsedDatacenter) {
+        Simulation.ToatalBandwidthUsedDatacenter = ToatalBandwidthUsedDatacenter;
+    }
 
-     }
-     */
+    public static void increaseToatalBandwidthUsedDatacenter(int datacenterId, long ToatalBandwidthUsedDatacenter) {
+        Simulation.ToatalBandwidthUsedDatacenter[datacenterId] += ToatalBandwidthUsedDatacenter;
+    }
+
+    public static void decreaseToatalBandwidthUsedDatacenter(int datacenterId, long ToatalBandwidthUsedDatacenter) {
+        Simulation.ToatalBandwidthUsedDatacenter[datacenterId] -= ToatalBandwidthUsedDatacenter;
+    }
+
+    public static long getTotalBandwidthUsedBetweenDatacenter() {
+        return TotalBandwidthUsedBetweenDatacenter;
+    }
+
+    public static void setTotalBandwidthUsedBetweenDatacenter(long TotalBandwidthUsedBetweenDatacenter) {
+        Simulation.TotalBandwidthUsedBetweenDatacenter = TotalBandwidthUsedBetweenDatacenter;
+    }
+
+    public static void decreaseTotalBandwidthUsedBetweenDatacenter(long TotalBandwidthUsedBetweenDatacenter) {
+        Simulation.TotalBandwidthUsedBetweenDatacenter -= TotalBandwidthUsedBetweenDatacenter;
+    }
+
+    public static void increaseTotalBandwidthUsedBetweenDatacenter(long TotalBandwidthUsedBetweenDatacenter) {
+        Simulation.TotalBandwidthUsedBetweenDatacenter += TotalBandwidthUsedBetweenDatacenter;
+    }
+    
+
 }
+ 

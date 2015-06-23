@@ -21,14 +21,11 @@ import org.cloudbus.cloudsim.power.PowerVm;
  *
  * @author Novin Pendar
  */
-//public class VmPower  extends Vm{    
 public class VmPower extends PowerVm {
 
     int vmType;
     private VmAgent vmagent;
     private Queue vmQueue;
-//    private List<Integer> cloudletList = new ArrayList<Integer>();
-//    private List<ResCloudlet> resCloudletList = new ArrayList<ResCloudlet>();
     private List<CloudletPower> vmCloudletList = new ArrayList<CloudletPower>();
    
     public VmPower(int id,
@@ -57,17 +54,7 @@ public class VmPower extends PowerVm {
         vmagent = new VmAgent(totalAllocatedMips, totalRequestedMips, totalUtilization);
     }
 
-    /*public VmPower(int id,
-     int userId,
-     double mips,
-     int numberOfPes,
-     int ram,
-     long bw,
-     long size,
-     String vmm,
-     CloudletScheduler cloudletScheduler) {
-     super(id, userId, mips, numberOfPes, ram, bw, size, vmm, cloudletScheduler);
-     }*/
+    
     //TO DO
     public void VmAgent() {
 

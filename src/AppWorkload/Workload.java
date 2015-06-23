@@ -26,6 +26,7 @@ public class Workload implements Serializable{
     int numberofFiles;
     long[] sizeofFile;// = new long[numberofFiles];
     long[] timetoIO;//at this time a cloudlet start to I/O
+//    double CpuUtilization;
 
     public Workload(int id, int size, int filesize, int outputfilsize, int pes,int datastoragDcId, int dataserverNode, long arrivalTime, int numberofFiles, long[] sizeofFile,long[] timetoIO) {
         this.id = id;
@@ -39,6 +40,7 @@ public class Workload implements Serializable{
         this.numberofFiles = numberofFiles;
         this.sizeofFile = sizeofFile;
         this.timetoIO = timetoIO;
+//        this.CpuUtilization = Cputilization;
     }
 
     public Workload(int id, int size, int filesize, int outputfilsize, int pes, int dataserverNode, long arrivalTime) {

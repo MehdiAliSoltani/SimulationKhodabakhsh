@@ -15,6 +15,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
+import java.util.Random;
 import org.cloudbus.cloudsim.Vm;
 import simulation.AppConstants;
 import simulation.CreateResources;
@@ -110,19 +111,171 @@ public class SchedulerAgent {
         }
         return f;
     }
-    private int findHostClass(HostPower host){
+
+    private int findHostClass(HostPower host) {
 //        host.getUtilizationMips();
         return 0;
     }
-    
-    public int determinVmIdforCpuBound(CloudletPower cloudlet){
-        
+
+    public int determinVmIdforCpuBound(CloudletPower cloudlet) {
+
         return 0;
     }
-    public int determineVmId(CloudletPower cloudlet) {
+
+    public int determineVmId_RandomwithResourceConsidering(CloudletPower cloudlet) {
+        int dataStorageDcId = cloudlet.getDataStorageDatacenterId();
+        int dataStroageId = cloudlet.getDataStorageId();
+        NetworkAgent.TableValues[] tableRow = getNetworkAgent().getWTableRow(dataStorageDcId, dataStroageId);
+
+        Random r = new Random();
+        int numberVm = Simulation.VMLIST.size();
+        int vmId;
+        List<Integer> selectedVmId = new ArrayList<Integer>();
+
+        while (true) {
+            while (true) {
+                vmId = r.nextInt(numberVm);
+                if (!selectedVmId.contains(vmId)) {
+                    selectedVmId.add(vmId);
+                    break;
+                }
+            }
+            for (int datacenterId = 0; datacenterId < AppConstants.NUM_DATACENTER; datacenterId++) {
+                List<HostPower> hostlist = Simulation.getCOMPUTE_SERVER_LIST(datacenterId);
+                for (HostPower host : hostlist) {
+
+                    vmId = isHostHasEnoughMips(host, cloudlet);
+                    List<VmPower> vmlist = host.getVmList();
+                    for (VmPower vm : vmlist) {
+                        if (vm.getId() == vmId) {
+//                            isHostHasEnoughMips(host, cloudlet);
+                            for (int Index = 0; Index < tableRow.length; Index++) {
+                                if (tableRow[Index].getDatacenterId() == datacenterId && tableRow[Index].getComputehostId() == host.getId()) {
+                                    cloudlet.setDatacenterIdHostedCloudlet(datacenterId);
+                                    cloudlet.setHost(host.getId());
+                                    cloudlet.setAlpha(tableRow[Index].getAlpha());
+                                    if (dataStorageDcId == datacenterId) {
+                                        cloudlet.setInSource(true);
+                                    } else {
+                                        cloudlet.setInSource(false);
+                                    }
+                                    return vmId;
+
+                                }
+
+                            }
+                        }
+
+                    }
+                }
+            }
+            if (selectedVmId.size() == numberVm) {
+                break;
+            }
+        }
+
+        return AppConstants.NOT_SUITABLE_VM_FOUND;
+
+    }
+
+    public int determineVmId_LowestLoad(CloudletPower cloudlet) {
+        int dataStorageDcId = cloudlet.getDataStorageDatacenterId();
+        int dataStroageId = cloudlet.getDataStorageId();
+        NetworkAgent.TableValues[] tableRow = getNetworkAgent().getWTableRow(dataStorageDcId, dataStroageId);
+
+        Random r = new Random();
+        int numberVm = Simulation.VMLIST.size();
+        int vmId;
+        List<Integer> selectedVmId = new ArrayList<Integer>();
+
+        while (true) {
+            while (true) {
+                vmId = r.nextInt(numberVm);
+                if (!selectedVmId.contains(vmId)) {
+                    selectedVmId.add(vmId);
+                    break;
+                }
+            }
+            for (int datacenterId = 0; datacenterId < AppConstants.NUM_DATACENTER; datacenterId++) {
+                List<HostPower> hostlist = Simulation.getCOMPUTE_SERVER_LIST(datacenterId);
+                for (HostPower host : hostlist) {
+                    List<VmPower> vmlist = host.getVmList();
+                    for (VmPower vm : vmlist) {
+                        if (vm.getId() == vmId) {
+                            if (isHostEnoughMips(host, cloudlet)) {
+                                for (int Index = 0; Index < tableRow.length; Index++) {
+                                    if (tableRow[Index].getDatacenterId() == datacenterId && tableRow[Index].getComputehostId() == host.getId()) {
+                                        cloudlet.setDatacenterIdHostedCloudlet(datacenterId);
+                                        cloudlet.setHost(host.getId());
+                                        cloudlet.setAlpha(tableRow[Index].getAlpha());
+                                        if (dataStorageDcId == datacenterId) {
+                                            cloudlet.setInSource(true);
+                                        } else {
+                                            cloudlet.setInSource(false);
+                                        }
+                                        return vmId;
+
+                                    }
+
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+            if (selectedVmId.size() == numberVm) {
+                break;
+            }
+        }
+
+        return AppConstants.NOT_SUITABLE_VM_FOUND;
+
+    }
+
+    public int determineVmId_Random(CloudletPower cloudlet) {
+        int dataStorageDcId = cloudlet.getDataStorageDatacenterId();
+        int dataStroageId = cloudlet.getDataStorageId();
+        NetworkAgent.TableValues[] tableRow = getNetworkAgent().getWTableRow(dataStorageDcId, dataStroageId);
+
+        Random r = new Random();
+        int numberVm = Simulation.VMLIST.size();
+        int vmId = r.nextInt(numberVm);
+        for (int datacenterId = 0; datacenterId < AppConstants.NUM_DATACENTER; datacenterId++) {
+            List<HostPower> hostlist = Simulation.getCOMPUTE_SERVER_LIST(datacenterId);
+            for (HostPower host : hostlist) {
+                List<VmPower> vmlist = host.getVmList();
+                for (VmPower vm : vmlist) {
+                    if (vm.getId() == vmId) {
+                        for (int Index = 0; Index < tableRow.length; Index++) {
+                            if (tableRow[Index].getDatacenterId() == datacenterId && tableRow[Index].getComputehostId() == host.getId()) {
+                                cloudlet.setDatacenterIdHostedCloudlet(datacenterId);
+                                cloudlet.setHost(host.getId());
+                                cloudlet.setAlpha(tableRow[Index].getAlpha());
+                                if (dataStorageDcId == datacenterId) {
+                                    cloudlet.setInSource(true);
+                                } else {
+                                    cloudlet.setInSource(false);
+                                }
+                                return vmId;
+                            }
+
+                        }
+                    }
+
+                }
+            }
+        }
+
+        return AppConstants.NOT_SUITABLE_VM_FOUND;
+
+    }
+
+    public int determineVmId_SSLNT(CloudletPower cloudlet) {
         int vmId = 0;
         int dataStorageDcId = cloudlet.getDataStorageDatacenterId();
         int dataStroageId = cloudlet.getDataStorageId();
+//        System.out.println("@@ dataStorageDcId "+ dataStorageDcId + " @@ dataStroageId "+dataStroageId);
         int pesNeeded = cloudlet.getNumberOfPes();
         NetworkAgent.TableValues[] tableRow = getNetworkAgent().getWTableRow(dataStorageDcId, dataStroageId);
         Arrays.sort(tableRow, new Comparator<NetworkAgent.TableValues>() {
@@ -160,62 +313,37 @@ public class SchedulerAgent {
         }
         meanIn = meanIn / countIn;
         meanOut = meanOut / countOut;
-//        List<Integer,Integer> appropriateList = new ArrayList<Integer,Integer>();
-//        List<HostPower> hostPowerList;
-//        for (int i = 0; i < AppConstants.NUM_DATACENTER; i++) {
-//            hostPowerList.addAll(Simulation.getCOMPUTE_SERVER_LIST(i));
-//        }
         List<SelectedHost> selectedHost = new ArrayList<SelectedHost>();
-       
+        int hostDatacenter = 0;
         for (int i = 0; i < tableRow.length; i++) {
             int dcId = tableRow[i].getDatacenterId();
             int csId = tableRow[i].getComputehostId();
+            double alpha = tableRow[i].getAlpha();
 //            if (tableRow[i].getAlpha() < meanIn && dcId == dataStorageDcId) { // means first select appropriate hosts those are in the same datacenter as cloudlet
             HostPower hostPower = Simulation.getOneHost(dcId, csId);    //select the host from host list in datacenter             
+            hostDatacenter = hostPower.getDatacenterID();
             vmId = isHostHasEnoughMips(hostPower, cloudlet);
             if (vmId != AppConstants.NOT_SUITABLE_VM_FOUND) {
                 flag = true;
+                cloudlet.setDatacenterIdHostedCloudlet(hostDatacenter);
+                cloudlet.setHost(hostPower.getId());
+                cloudlet.setAlpha(alpha);
                 break;
             } else {
                 continue;
             }
         }
-        if(flag )
-        return vmId;
-        else 
+        if (flag) {
+
+            if (dataStorageDcId == hostDatacenter) {
+                cloudlet.setInSource(true);
+            } else {
+                cloudlet.setInSource(false);
+            }
+            return vmId;
+        } else {
             return AppConstants.NOT_SUITABLE_VM_FOUND;
-        /////////*******
-
-        /*     if (vmId == AppConstants.NOT_SUITABLE_VM_FOUND) {
-         for (int i = 0; i < tableRow.length; i++) {
-         int dcId = tableRow[i].getDatacenterId();
-         int csId = tableRow[i].getComputehostId();
-         if (tableRow[i].getAlpha() < meanOut && dcId != dataStorageDcId && tableRow[i].getDatacenterId() != ERROR_DATACENTER) { // means first select appropriate hosts those are in the same datacenter as cloudlet
-         HostPower hostPower = Simulation.getOneHost(dcId, csId);    //select the host from host list in datacenter             
-         vmId = isHostHasEnoughMips(hostPower, cloudlet);
-         return vmId;
-         //                if (hostPower.) {
-         //                    selectedHost.add(new SelectedHost(dataStroageId, csId));
-         //                }
-
-         } else {
-         //                    tableRow[i].setDatacenterId(ERROR_DATACENTER);
-         }
-
-         }
-         }*/
-        ///////////////////***
-//        Iterator it = selectedHost.iterator();
-//        while (it.hasNext()) {
-//            SelectedHost shost = (SelectedHost) it.next();
-//            HostPower hostpower = Simulation.getOneHost(shost.getHostId(), shost.getHostId());
-//
-//        }
-//
-//        for (int i = 0; i < selectedHost.size(); i++) {
-//            Simulation.getOneHost(dataStroageId, countIn);
-//        }
-//
+        }
     }
 
     /**
@@ -229,50 +357,59 @@ public class SchedulerAgent {
     private int isHostHasEnoughMips(HostPower host, CloudletPower cloudlet) {
         double maxAvailibleMips = host.getMaxAvailableMips();
         double cloudletMipsNeeded = cloudlet.getNumberOfPes();
-//////////////////        
-/*        int n0 = 0,n1 = 0,n2 = 0,n3 = 0;
-         for (HostPower h : Simulation.getCOMPUTE_SERVER_LIST(0)) {
-         for(Vm v :h.getVmList())
-         switch(v.getNumberOfPes()){
-         case 1:
-         n0++;
-         break;
-         case 2:
-         n1++;
-         break;
-         case 4:
-         n2++;
-         break;
-         case 8:
-         n3++;
-         break;
-         }
-         }
-         */
+        boolean find = false;
+        int VmId = AppConstants.NOT_SUITABLE_VM_FOUND;
         List<VmPower> vmPowerList = host.getVmList();
         Iterator it = vmPowerList.iterator();
-        while (it.hasNext()) {
+        while (it.hasNext()) { // trying to find a vm with the same pes as cloudlet requires
             VmPower vm = (VmPower) it.next();
-            int vmnoo = vm.getCloudletScheduler().runningCloudlets();
-//            int vmmn = vm.getCloudletScheduler().
             double vmMips = vm.getMips();
             if (vm.getNumberOfPes() == cloudlet.getNumberOfPes()) { // means a cloudlet with the multiple pes should be run on the vm with the same pes
-                double test1 = vm.getCurrentRequestedTotalMips();
-                double currentAvailibleMips = vm.getCurrentRequestedTotalMips();// * vm.getNumberOfPes();
-                double currentFreeMips = vmMips * vm.getNumberOfPes() - vm.getCurrentRequestedTotalMips();
+//                double currentAvailibleMips = vm.getCurrentRequestedTotalMips();// * vm.getNumberOfPes();
+//                double currentFreeMips = vmMips * vm.getNumberOfPes() - vm.getCurrentRequestedTotalMips();
                 double vmUtilization = vm.getCurrentRequestedTotalMips() / (vm.getNumberOfPes() * vmMips);
-//                if(currentFreeMips >=  )
-                if (vmUtilization < 0.85) {
-                    return vm.getId();
+                if (vmUtilization < 0.50) {
+                    VmId = vm.getId();
+                    find = true;
                 }
-//                if (currentFreeMips >= (cloudlet.getNumberOfPes() * vmMips * 0.5)) {
-//                    return vm.getId();
-//                }
             }
-
         }
-//        double approximatePesAvailible = maxAvailibleMips;
-        return AppConstants.NOT_SUITABLE_VM_FOUND;
+        if (!find) { // operate First Fit if an appropriate Vm did not find
+            Iterator itt = vmPowerList.iterator();
+            while (itt.hasNext()) {
+                VmPower vm = (VmPower) itt.next();
+                double vmMips = vm.getMips();
+                double vmUtilization = vm.getCurrentRequestedTotalMips() / (vm.getNumberOfPes() * vmMips);
+                if (vmUtilization < 0.50) {
+                    VmId = vm.getId();
+                    find = true;
+                }
+
+            }
+        }
+        return VmId;
+    }
+
+    private boolean isHostEnoughMips(HostPower host, CloudletPower cloudlet) {
+
+        boolean find = false;
+        int VmId = AppConstants.NOT_SUITABLE_VM_FOUND;
+        List<VmPower> vmPowerList = host.getVmList();
+        Iterator it = vmPowerList.iterator();
+        while (it.hasNext()) { // trying to find a vm with the same pes as cloudlet requires
+            VmPower vm = (VmPower) it.next();
+            double vmMips = vm.getMips();
+            if (vm.getNumberOfPes() == cloudlet.getNumberOfPes()) { // means a cloudlet with the multiple pes should be run on the vm with the same pes
+//                double currentAvailibleMips = vm.getCurrentRequestedTotalMips();// * vm.getNumberOfPes();
+//                double currentFreeMips = vmMips * vm.getNumberOfPes() - vm.getCurrentRequestedTotalMips();
+                double vmUtilization = vm.getCurrentRequestedTotalMips() / (vm.getNumberOfPes() * vmMips);
+                if (vmUtilization < 0.50) {
+                    VmId = vm.getId();
+                    find = true;
+                }
+            }
+        }
+        return find;
     }
 
     public AdmissionAgent getAdmissionagent() {

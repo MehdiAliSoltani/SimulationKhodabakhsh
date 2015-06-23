@@ -172,7 +172,7 @@ public class ReadWritetoFile {
             do {
                 readlist = (List<Workload>) objectIn.readObject();
                 retlist.add(readlist);
-                System.out.println(t++);
+//                System.out.println(t++);
             } while (readlist != null);
             objectIn.close();
         } catch (EOFException ex) {

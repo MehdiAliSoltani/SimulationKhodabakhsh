@@ -21,7 +21,7 @@ import simulation.Simulation;
  *
  * @author Novin Pendar
  */
-public class GenerateWorkload {
+public class GenerateWorkloadPolicyBased {
 
     static int request_ID = 0;
 
@@ -29,27 +29,28 @@ public class GenerateWorkload {
         request_ID += 1;
         return request_ID;
     }
-
-/*    private int NumberofRequest() {
-        if (Simulation.SENARIO == 1) {
-            return AppConstants.NUM_REQUESTS_IN_SENARIO_1;
-        } else if (Simulation.SENARIO == 2) {
-            return AppConstants.NUM_REQUESTS_IN_SENARIO_2;
-        }
-        return 0;
-    }
-*/
     /*
-    private int NumberofRequestperSecond() {
-        if (Simulation.SENARIO == 1) {
-            return AppConstants.NUM_of_REQUESTS_SECOND;
-        } else if (Simulation.SENARIO == 2) {
-            return AppConstants.NUM_of_REQUESTS_SENARIO_2_per_SECOND;
-        }
-        return 0;
-    }
-*/
+     private int NumberofRequest() {
+     if (Simulation.SENARIO == 1) {
+     return AppConstants.NUM_REQUESTS_IN_SENARIO_1;
+     } else if (Simulation.SENARIO == 2) {
+     return AppConstants.NUM_REQUESTS_IN_SENARIO_2;
+     }
+     return 0;
+     }*/
+
+    /*  private int NumberofRequestperSecond() {
+     if (Simulation.SENARIO == 1) {
+     return AppConstants.NUM_of_REQUESTS_SECOND;
+     } else if (Simulation.SENARIO == 2) {
+     return AppConstants.NUM_of_REQUESTS_SENARIO_2_per_SECOND;
+     }
+     return 0;
+     }
+     */
     public void generateWorkload() {
+        int cpub = 0, iob = 0;
+
 //        List<Integer> pelist = new ArrayList<>();
         Random rand = new Random();
         int[] pelist = new int[AppConstants.VM_PES.length];
@@ -62,7 +63,7 @@ public class GenerateWorkload {
         long startarrivaltime = 0, endarrivaltime = 0;
 //        int numrequest = NumberofRequest();
         int requestID;
-        int size;
+        int size = AppConstants.L_MIN;
         int filesize;
         boolean firsttimewritetofile = true;
         String filepath = AppConstants.WORKLOAD_DIRECTORY + Simulation.SENARIO + "\\";
@@ -73,7 +74,6 @@ public class GenerateWorkload {
 //        List<List<Workload>> listworkloadlist = new ArrayList<List<Workload>>();
         Workload request = null;
         ExponentialDistr expdistr_size = new ExponentialDistr(AppConstants.L_Mean); // generate size of requests
-//        ExponentialDistr expdistr_numberofrequest = new ExponentialDistr(NumberofRequestperSecond()); // generate size of requests
         ExponentialDistr expdistr_numberofrequest = new ExponentialDistr(AppConstants.NUM_of_REQUESTS_SECOND); // generate size of requests
 //        ExponentialDistr expdistr_numberofrequest1 = new ExponentialDistr(NumberofRequestperSecond()); // generate size of requests
         ParetoDistr paretodist = new ParetoDistr(1, AppConstants.FILE_SIZE_MIN); //file size
@@ -85,24 +85,49 @@ public class GenerateWorkload {
         for (int i = 0; i < AppConstants.SIMULATION_LENGTH / 100; i++) {
 
             for (int j = 0; j < 100; j++) { // 100 seconds 
+
                 String filename = filepath + fileNo + ".bin";
                 endarrivaltime = startarrivaltime + 100000;
                 int num_req = (int) expdistr_numberofrequest.sample();
                 uniformdist_arrivaltime = new UniformDistr(startarrivaltime, endarrivaltime); //***************
                 startarrivaltime = endarrivaltime;
                 while (num_req > 0) { // 1 second
-                    
-                    size = (int) expdistr_size.sample();
+                    boolean ioState = false;
+                    Random r = new Random();
+                    if (r.nextDouble() <= ioPersent()) {
+                        do {// io bound generator
+                            size = (int) expdistr_size.sample();
+                        } while (size >= AppConstants.L_Mean);
+                        ioState = true;
+                    } else {//cpu bound generator
+                        do {
+                            size = (int) expdistr_size.sample();
+                        } while (size < AppConstants.L_Mean);
+
+                    }
                     if (size < AppConstants.L_MAX && size >= AppConstants.L_MIN) {
-                        
+                        if (ioState) {
+                            iob++;
+                        } else {
+                            cpub++;
+                        }
+
                         requestID = NextRequestID();
                         filesize = (int) paretodist.sample();
                         long arrivaltime = (long) uniformdist_arrivaltime.sample();
                         num_req -= 1;
                         int peneeded = (int) uniformdist_pe.sample();
-                        int storageserver;
-                        int datastorageDcId;
-                        int numberOfFilesNeeded = (int) uniformdist_numberofFiles.sample();
+                        int storageserver, datastorageDcId;
+                        int numberOfFilesNeeded;
+                        if (ioState) {
+                            do { // generate number of files for io bound requests
+                                numberOfFilesNeeded = (int) uniformdist_numberofFiles.sample();
+                            } while (numberOfFilesNeeded <= 10);
+                        } else {
+                            do { // generate number of files for cpu bound requests
+                                numberOfFilesNeeded = (int) uniformdist_numberofFiles.sample();
+                            } while (numberOfFilesNeeded > 10);
+                        }
                         ExponentialDistr expDistsizeofFile = new ExponentialDistr(AppConstants.MEAN_FILESIZE);
                         ExponentialDistr expDisttimetoIO = new ExponentialDistr(size / 4);
                         long[] sizeOfFiles = new long[numberOfFilesNeeded];
@@ -115,6 +140,11 @@ public class GenerateWorkload {
                             } while (ioTime > size);
                             timetoIO[k] = ioTime;
                         }
+//                        long tot = 0;
+//                        for (int k = 0; k < sizeOfFiles.length; k++) {
+//                            tot += sizeOfFiles[k];
+//                        }
+//                        System.out.println("Size = "+size +" Number of file "+ numberOfFilesNeeded + " total size is "+ (tot /1000000) +"M");
                         Arrays.sort(timetoIO);
                         if (rand.nextInt(100) % 2 == 0) {
                             storageserver = (int) uniformdist_dataserver_in_DC_0.sample();
@@ -123,23 +153,12 @@ public class GenerateWorkload {
                             storageserver = (int) uniformdist_dataserver_in_DC_1.sample();
                             datastorageDcId = 1;  // data storage is in datacenter #1
                         }
-
-//                        System.out.println("Arrival time: "+arrivaltime);
                         request = new Workload(requestID, size, filesize, filesize, AppConstants.VM_PES[peneeded], datastorageDcId, storageserver, arrivaltime,
                                 numberOfFilesNeeded, sizeOfFiles, timetoIO);
-                        /*   request = new Workload(requestID,
-                         size,
-                         filesize,
-                         filesize,
-                         AppConstants.VM_PES[peneeded],
-                         storageserver,
-                         arrivaltime);*/
                         workloadlist.add(request);
                     }
-
                 }
                 Collections.sort(workloadlist, new Comparator<Workload>() {
-
                     @Override
                     public int compare(Workload o1, Workload o2) {
                         if (o1.getArrivalTime() > o2.getArrivalTime()) {
@@ -149,7 +168,6 @@ public class GenerateWorkload {
                         } else {
                             return 0;
                         }
-
                     }
                 });
                 if (firsttimewritetofile) {
@@ -168,18 +186,38 @@ public class GenerateWorkload {
                 part = 0;
             }
         }
-
+        System.out.println("CPU " + cpub + " I/O " + iob);
     }
- 
+
+    private double ioPersent() {
+        double iopercent = 0.3;
+        switch (Simulation.SENARIO) {
+            case 1:
+                iopercent = 0.3;
+                break;
+            case 2:
+                iopercent = 0.4;
+                break;
+            case 3:
+                iopercent = 0.5;
+                break;
+            case 4:
+                iopercent = 0.6;
+                break;
+            case 5:
+                iopercent = 0.7;
+                break;
+            case 6:
+                iopercent = 0.8;
+                break;
+        }
+        return iopercent;
+    }
+
     public static void main(String[] args) {
-        GenerateWorkload g = new GenerateWorkload();
+        System.out.println("Scenario #"+Simulation.SENARIO);
+        GenerateWorkloadPolicyBased g = new GenerateWorkloadPolicyBased();
         g.generateWorkload();
         ReadWritetoFile r = new ReadWritetoFile();
-//        long t1 = System.currentTimeMillis();
-//        System.out.println(t1);
-//        List<Object> o = r.readfromFile("d:\\Workload\\1.bin");
-
-//        System.out.println(System.currentTimeMillis()-t1);
-//        System.out.println("Size:"+o.size());
     }
 }

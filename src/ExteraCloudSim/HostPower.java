@@ -19,6 +19,8 @@ import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.VmScheduler;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.lists.PeList;
+import org.cloudbus.cloudsim.power.PowerHost;
+import org.cloudbus.cloudsim.power.models.PowerModelSpecPowerHpProLiantMl110G4Xeon3040;
 import org.cloudbus.cloudsim.provisioners.BwProvisioner;
 import org.cloudbus.cloudsim.provisioners.RamProvisioner;
 import simulation.AppConstants;
@@ -29,7 +31,10 @@ import simulation.AppConstants;
  */
 //public class HostPower extends HostDynamicWorkload {
 public class HostPower extends Host {
+//public class HostPower extends PowerHost {
 
+    private static int callHistory = 1;
+    private static double lastTime;
     private int datacenterID;
     private ServerAgent serveragent;
 
@@ -38,6 +43,8 @@ public class HostPower extends Host {
      */
     private double utilizationMips;
     private static double bandwidthUtilization;
+    private double inHouseTotalBandwidthUsed;
+    private double outHouseTotalBandwidthUsed;
 
     /**
      * The previous utilization mips.
@@ -51,6 +58,7 @@ public class HostPower extends Host {
 
     public HostPower(int id, RamProvisioner ramProvisioner, BwProvisioner bwProvisioner, long storage, List<? extends Pe> peList, VmScheduler vmScheduler) {
         super(id, ramProvisioner, bwProvisioner, storage, peList, vmScheduler);
+//        super(id, ramProvisioner, bwProvisioner, storage, peList, vmScheduler, new PowerModelSpecPowerHpProLiantMl110G4Xeon3040());
         setUtilizationMips(0);
         setPreviousUtilizationMips(0);
         createServerAgent();
@@ -64,6 +72,7 @@ public class HostPower extends Host {
             List<? extends Pe> peList,
             VmScheduler vmScheduler) {
         super(id, ramProvisioner, bwProvisioner, storage, peList, vmScheduler);
+//        super(id, ramProvisioner, bwProvisioner, storage, peList, vmScheduler, new PowerModelSpecPowerHpProLiantMl110G4Xeon3040());
         this.datacenterID = datacenterId;
         setUtilizationMips(0);
         setPreviousUtilizationMips(0);
@@ -116,6 +125,11 @@ public class HostPower extends Host {
 
     @Override
     public double updateVmsProcessing(double currentTime) {
+//        if(callHistory == 1 && currentTime- lastTime >= 1 ){
+//            lastTime = currentTime; 
+//            
+//        }
+//        System.out.println("currentTime is  # " + currentTime + " #");
         this.serveragent.setHostMaxAvaiiableMips(getMaxAvailableMips());
         this.serveragent.setHostMaxCurrentUtilization(getMaxUtilization());
         this.serveragent.setHostPreviousUtilizationCpu(getPreviousUtilizationOfCpu());
@@ -123,20 +137,11 @@ public class HostPower extends Host {
 
         this.setBandwidthUtilization(getBwUtilization()); // set the bandwidth utilization for this host
         double smallerTime = super.updateVmsProcessing(currentTime);
-//        double smallerTime;
         setPreviousUtilizationMips(getUtilizationMips());
         setUtilizationMips(0);
         double hostTotalRequestedMips = 0;
         List<VmPower> vmlist = this.getVmList();
-        if (currentTime > 30){
-        double ut = this.getMaxUtilization();
-        double utt = this.getUtilizationMips();
-        double uttt = this.getUtilizationOfCpuMips();
-        double tt =0;
-        }
-        
-        
-        
+
         for (VmPower vm : vmlist) {
             getVmScheduler().deallocatePesForVm(vm);
         }
@@ -153,30 +158,31 @@ public class HostPower extends Host {
             vm.getVmagent().setVmtotalRequestedMips(totalRequestedMips);
             vm.getVmagent().setVmmipsUtilization(totalRequestedMips / vm.getMips() * 100);
 ////////////////////////            
-            if (!Log.isDisabled()) {
-                Log.formatLine(
-                        "%.2f: *** ** * Datacenter # " + getDatacenter().getId() + " [Host #" + getId() + "] Total allocated MIPS for VM #" + vm.getId()
-                        + " (Host #" + vm.getHost().getId()
-                        + ") is %.2f, was requested %.2f out of total %.2f (%.2f%%)",
-                        CloudSim.clock(),
-                        totalAllocatedMips,
-                        totalRequestedMips,
-                        vm.getMips() * vm.getNumberOfPes(),
-                        totalRequestedMips / (vm.getMips() * vm.getNumberOfPes()) * 100);
+       /*     if (!Log.isDisabled()) {
+             Log.formatLine(
+             "%.2f: *** ** * Datacenter # " + getDatacenter().getId() + " [Host #" + getId() + "] Total allocated MIPS for VM #" + vm.getId()
+             + " (Host #" + vm.getHost().getId()
+             + ") is %.2f, was requested %.2f out of total %.2f (%.2f%%)",
+             CloudSim.clock(),
+             totalAllocatedMips,
+             totalRequestedMips,
+             vm.getMips() * vm.getNumberOfPes(),
+             totalRequestedMips / (vm.getMips() * vm.getNumberOfPes()) * 100);
 
-            }
+             }
+             */
 
-            System.out.println("\n---------------------------------------------");
+//            System.out.println("\n---------------------------------------------");
             setUtilizationMips(getUtilizationMips() + totalAllocatedMips);
             hostTotalRequestedMips += totalRequestedMips;
         }
 
-        addStateHistoryEntry(
-                currentTime,
-                getUtilizationMips(),
-                hostTotalRequestedMips,
-                (getUtilizationMips() > 0));
-
+        /*        addStateHistoryEntry(
+         currentTime,
+         getUtilizationMips(),
+         hostTotalRequestedMips,
+         (getUtilizationMips() > 0));
+         */
         return smallerTime;
     }
 
@@ -350,6 +356,30 @@ public class HostPower extends Host {
 
     public ServerAgent getServeragent() {
         return serveragent;
+    }
+
+    public double getInHouseTotalBandwidthUsed() {
+        return inHouseTotalBandwidthUsed;
+    }
+
+    public void setInHouseTotalBandwidthUsed(double inHouseTotalBandwidthUsed) {
+        this.inHouseTotalBandwidthUsed = inHouseTotalBandwidthUsed;
+    }
+
+    public void decreseInHouseTotalBandwidthUsed(double inHouseTotalBandwidthUsed) {
+        this.inHouseTotalBandwidthUsed = this.inHouseTotalBandwidthUsed - inHouseTotalBandwidthUsed;
+    }
+
+    public double getOutHouseTotalBandwidthUsed() {
+        return outHouseTotalBandwidthUsed;
+    }
+
+    public void setOutHouseTotalBandwidthUsed(double outHouseTotalBandwidthUsed) {
+        this.outHouseTotalBandwidthUsed = outHouseTotalBandwidthUsed;
+    }
+
+    public void decreseOutHouseTotalBandwidthUsed(double outHouseTotalBandwidthUsed) {
+        this.outHouseTotalBandwidthUsed = this.outHouseTotalBandwidthUsed - outHouseTotalBandwidthUsed;
     }
 
 }

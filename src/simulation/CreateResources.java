@@ -16,8 +16,6 @@ import java.util.LinkedList;
 import java.util.List;
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.CloudletSchedulerDynamicWorkload;
-import org.cloudbus.cloudsim.CloudletSchedulerSpaceShared;
-import org.cloudbus.cloudsim.CloudletSchedulerTimeShared;
 import org.cloudbus.cloudsim.DatacenterCharacteristics;
 import org.cloudbus.cloudsim.Pe;
 import org.cloudbus.cloudsim.Storage;
@@ -26,12 +24,10 @@ import org.cloudbus.cloudsim.UtilizationModelFull;
 import org.cloudbus.cloudsim.UtilizationModelNull;
 import org.cloudbus.cloudsim.UtilizationModelStochastic;
 import org.cloudbus.cloudsim.VmAllocationPolicySimple;
-import org.cloudbus.cloudsim.VmSchedulerTimeShared;
 import org.cloudbus.cloudsim.VmSchedulerTimeSharedOverSubscription;
 import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
-import simulation.Simulation;
 
 /**
  *
@@ -40,7 +36,6 @@ import simulation.Simulation;
 public class CreateResources {
 
     private static List<Cloudlet> cloudletList;
-//    private int datacenterID;
 
     public DatacenterPower createDatacenter(String name, int datacenterId) {
 
@@ -63,9 +58,10 @@ public class CreateResources {
                 costPerStorage, costPerBw);
 
         // 6. Finally, we need to create a PowerDatacenter object.
+/****/
         DatacenterPower datacenter = null;
         try {
-//            datacenter = new DatacenterPower(this.datacenterID,
+            
             datacenter = new DatacenterPower(
                     name,
                     characteristics,
@@ -83,7 +79,6 @@ public class CreateResources {
      * Create Hosts
      */
     private void createHostList(int numberofhosts, int datacenterId) {
-//        List<HostPower> hostlist = new ArrayList<HostPower>();
         List<Pe> peList = new ArrayList<Pe>();
         for (int i = 0; i < AppConstants.NUM_PE_per_CS; i++) {
             peList.add(new Pe(i, new PeProvisionerSimple(AppConstants.PE_MIPS)));
@@ -95,7 +90,6 @@ public class CreateResources {
                     new BwProvisionerSimple(AppConstants.CS_BAND_WIDTH),
                     AppConstants.STORAGE_per_CS,
                     peList,
-                    //                    new VmSchedulerTimeShared(peList)
                     new VmSchedulerTimeSharedOverSubscription(peList)
             ));
 
@@ -133,45 +127,11 @@ public class CreateResources {
                     1,
                     vmm,
                     new CloudletSchedulerDynamicWorkload(mips, pesNumber), 0);
-//                    new CloudletSchedule  rSpaceShared(), 0);
-//                    new CloudletSchedulerTimeShared(), 0);
             Simulation.VMLIST.add(vmpower);
             incrementVmNumber(vmtype, datacenterId);
-//            System.out.println(""+Simulation.VM_NUM_TYPE[this.datacenterID][vmtype]);
         }
 
     }
-
-    public void TempcreateVM(int userId, int vmtype, int datacenterId) {
-
-        //VM Parameters
-        long size = AppConstants.VM_IMAGE_SIZE[vmtype]; //image size (MB)
-        int ram = AppConstants.VM_RAM[vmtype]; //vm memory (MB)
-        int mips = AppConstants.VM_MIPS;
-        long bw = AppConstants.VM_BAND_WIDTH[vmtype];
-        int pesNumber = AppConstants.VM_PES[vmtype]; //number of cpus
-        String vmm = "Xen"; //VMM name
-
-        //create VMs
-        int vmNum = AppConstants.NUM_of_VM_in_HOST[vmtype] * AppConstants.NUM_COMPUTE_SERVERS[datacenterId];
-        VmPower vmpower = new VmPower(getVmId(),
-                userId,
-                mips,
-                pesNumber,
-                ram,
-                bw,
-                size,
-                1,
-                vmm,
-                new CloudletSchedulerDynamicWorkload(mips, pesNumber), 0);
-//                    new CloudletSchedulerSpaceShared(), 0);
-//                    new CloudletSchedulerTimeShared(), 0);
-        Simulation.VMLIST.add(vmpower);
-        incrementVmNumber(vmtype, datacenterId);
-//            System.out.println(""+Simulation.VM_NUM_TYPE[this.datacenterID][vmtype]);
-
-    }
-
     public DatacenterBrokerPower createBroker() {
         DatacenterBrokerPower broker = null;
         try {
@@ -206,7 +166,7 @@ public class CreateResources {
                 pesNumber,
                 cloudletFileSize,
                 cloudletOutputSize,
-                new UtilizationModelStochastic(),
+                new UtilizationModelStochastic(cloudletId),
                 new UtilizationModelNull(),
                 new UtilizationModelNull());
         cloudlet.setUserId(userId);

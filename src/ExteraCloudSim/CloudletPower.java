@@ -6,6 +6,7 @@
 
 package ExteraCloudSim;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.UtilizationModel;
@@ -18,11 +19,24 @@ public class CloudletPower extends Cloudlet {
     private int dataStorageDatacenterId;
     private int dataStorageId;
     private long arrivalTime;
-    private long startTime;
+    private double startTime;
     private int numberofFiles;
     private long[] sizeofFiles;
     private long[] timeofIO;
+    private double totalWaitingTime;
+    private double blockedTime; 
     private int ioNo; // indicate which files have been read before
+    private double totalExecutionTime;
+    private double totalCpuConsume;
+    private double restartTime;
+//    private long bandwidthUseDuringRun; // per second
+    private boolean inSource;
+    private int datacenterIdHostedCloudlet;
+    private int host;
+//    private long bandwidthUseApprox;
+    private double alpha;
+    private boolean ioCheck;
+//    private double cloudletTimetoRunApprox;
 
     public CloudletPower(int dataStorageDatacenterId,
             int dataStorageId,
@@ -52,6 +66,10 @@ public class CloudletPower extends Cloudlet {
         this.numberofFiles = numberofFiles;
         this.sizeofFiles = sizeofFiles;
         this.timeofIO = timeofIO;
+        setTotalWaitingTime(0);
+        setTotalExecutionTime(0);
+        setTotalCpuConsume(0);
+        setIoCheck(false);
     }
 
     public CloudletPower(int dataStorageDatacenterId,
@@ -86,6 +104,10 @@ public class CloudletPower extends Cloudlet {
         this.numberofFiles = numberofFiles;
         this.sizeofFiles = sizeofFiles;
         this.timeofIO = timeofIO;
+        setTotalWaitingTime(0);
+        setTotalExecutionTime(0);
+        setTotalCpuConsume(0);
+        setIoCheck(false);
     }
 
     public CloudletPower(int dataStorageDatacenterId, int dataStorageId, long arrivalTime, int numberofFiles, long[] sizeofFiles, long[] timeofIO, int cloudletId, long cloudletLength, int pesNumber, long cloudletFileSize, long cloudletOutputSize, UtilizationModel utilizationModelCpu, UtilizationModel utilizationModelRam, UtilizationModel utilizationModelBw, List<String> fileList) {
@@ -96,6 +118,10 @@ public class CloudletPower extends Cloudlet {
         this.numberofFiles = numberofFiles;
         this.sizeofFiles = sizeofFiles;
         this.timeofIO = timeofIO;
+        setTotalWaitingTime(0);
+        setTotalExecutionTime(0);
+        setTotalCpuConsume(0);
+        setIoCheck(false);
     }
 
     public CloudletPower(int dataStorageDatacenterId, int dataStorageId, long arrivalTime, int numberofFiles, long[] sizeofFiles, long[] timeofIO, int cloudletId, long cloudletLength, int pesNumber, long cloudletFileSize, long cloudletOutputSize, UtilizationModel utilizationModelCpu, UtilizationModel utilizationModelRam, UtilizationModel utilizationModelBw, boolean record) {
@@ -106,6 +132,10 @@ public class CloudletPower extends Cloudlet {
         this.numberofFiles = numberofFiles;
         this.sizeofFiles = sizeofFiles;
         this.timeofIO = timeofIO;
+        setTotalWaitingTime(0);
+        setTotalExecutionTime(0);
+        setTotalCpuConsume(0);
+        setIoCheck(false);
     }
 
     public int getDataStorageDatacenterId() {
@@ -132,11 +162,11 @@ public class CloudletPower extends Cloudlet {
         this.arrivalTime = arrivalTime;
     }
 
-    public long getStartTime() {
+    public double getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(long startTime) {
+    public void setStartTime(double startTime) {
         this.startTime = startTime;
     }
 
@@ -174,6 +204,97 @@ public class CloudletPower extends Cloudlet {
     public void incrementIoNo(){
         this.ioNo++;
     }
+
+    public double getTotalWaitingTime() {
+        return totalWaitingTime;
+    }
+
+    public void addWaitingTime(double waitingTime) {
+        this.totalWaitingTime = getTotalWaitingTime() + waitingTime;
+    }
+
+    public void setTotalWaitingTime(double totalWaitingTime) {
+        this.totalWaitingTime = totalWaitingTime;
+    }
+
+    public double getBlockedTime() {
+        return blockedTime;
+    }
+
+    public void setBlockedTime(double blockedTime) {
+        this.blockedTime = blockedTime;
+    }
+
+    public double getTotalExecutionTime() {
+        return getFinishTime() - getStartTime();
+    }
+
+    public void setTotalExecutionTime(double totalExecutionTime) {
+        this.totalExecutionTime = totalExecutionTime;
+    }
+
+    public double getTotalCpuConsume() {
+        return totalCpuConsume;
+    }
+
+    public void addTotalCpuConsume(double cpuConsume) {
+        this.totalCpuConsume = getTotalCpuConsume() + cpuConsume;
+    }
+
+    public void setTotalCpuConsume(double totalCpuConsume) {
+        this.totalCpuConsume = totalCpuConsume;
+    }
+
+    public double getRestartTime() {
+        return restartTime;
+    }
+
+    public void setRestartTime(double restartTime) {
+        this.restartTime = restartTime;
+    }
+
     
+    public boolean isInSource() {
+        return inSource;
+    }
+
+    public void setInSource(boolean inSource) {
+        this.inSource = inSource;
+    }
+
+    public int getDatacenterIdHostedCloudlet() {
+        return datacenterIdHostedCloudlet;
+    }
+
+    public void setDatacenterIdHostedCloudlet(int datacenterIdHostedCloudlet) {
+        this.datacenterIdHostedCloudlet = datacenterIdHostedCloudlet;
+    }
+
+    
+
+    public int getHost() {
+        return host;
+    }
+
+    public void setHost(int host) {
+        this.host = host;
+    }
+
+    public double getAlpha() {
+        return alpha;
+    }
+
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
+    }
+
+    public boolean isIoCheck() {
+        return ioCheck;
+    }
+
+    public void setIoCheck(boolean ioCheck) {
+        this.ioCheck = ioCheck;
+    }
+
     
 }
